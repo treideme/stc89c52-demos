@@ -13,18 +13,18 @@ void hardware_init() {
     TCON = INIT_TCON;
     TMOD = INIT_TMOD;
 
-    // Initialise timer registers for baud rate generation
+    // Initialise Timer2 registers for baud rate generation
     // T2_overflow = 0xFFFC
     // baud rate
-    //        Fclk = 12000000
+    //        Fclk = 12000000 * 2 (12T mode)
     // of = -------------------
-    //       32* [0xFFFF - T2]
-    // 125000.0 ~ 115200
-    RCAP2L = 0xFC;     //Initial timer value
+    //       32* [0xFFFF - RCAP]
+    // ~9615 ~ 9600 bps
+    RCAP2L = 0xD9;     //Initial timer value
     RCAP2H = 0xFF;     //Initial timer value
     //
-    T2CON = INIT_T2CON;
-
+    T2_MOD = INIT_T2_MOD;
+    T2_CON = INIT_T2_CON;
 
     // Serial Control
     SCON = INIT_SCON;

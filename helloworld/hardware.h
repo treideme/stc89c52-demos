@@ -28,7 +28,7 @@
 #include "pin.h"
 
 #define INIT_PCON \
-  B8(10000000) /**< PCON  Power Control Register. @verbatim
+  B8(00000000) /**< PCON  Power Control Register. @verbatim
      00010000 = reset
      || |||||
      || ||||+-- (RW)  IDL  : Idle Mode flag, set to 1 for idle
@@ -109,7 +109,7 @@
   @endverbatim
 */
 
-#define INIT_T2CON \
+#define INIT_T2_CON \
   B8(00110100) /**< T2CON  Timer 2 Control. @verbatim
      00000000 = reset
      ||||||||
@@ -125,7 +125,7 @@
   @endverbatim
 */
 
-#define INIT_T2MOD \
+#define INIT_T2_MOD \
   B8(00000000) /**< T2CON  Timer 2 Control. @verbatim
      00000000 = reset
      xxxxxx||

@@ -7,6 +7,7 @@
  */
 #include <mcs51/8051.h>
 #include "hardware.h"
+#include "uart.h"
 
 /******************************************************************************\
 * Private type definitions
@@ -64,7 +65,9 @@ void Timer1_interrupt() __interrupt(TF1_VECTOR) { }
 /**
  * UART0 Interrupt handler.
  */
-void UART0_interrupt() __interrupt(SI0_VECTOR) { }
+void UART0_interrupt() __interrupt(SI0_VECTOR) {
+    uart_isr_callback();
+}
 
 /**
  * Timer2 Interrupt handler.
@@ -90,8 +93,14 @@ void INT3_interrupt() __interrupt(IE3_VECTOR) { }
  */
 void main() {
     hardware_init();
+    ES = 1;                 //Enable UART interrupt
+    EA = 1;                 //Open master interrupt switch
+
     while (1) {
         P2_0 = !P2_0;
+        P2_1 = 1;
+        uart_puts("Hello World\r\n");
+        P2_1 = 0;
         delay(30000);
     }
 }
