@@ -88,11 +88,11 @@
 */
 
 #define INIT_TMOD \
-  B8(00000000) /**< TMOD  Timer Mode. @verbatim
+  B8(00100000) /**< TMOD  Timer Mode. @verbatim
      00000000 = reset
      ||||||||
      |||||||+-- (RW)  M0   : Timer 0 Mode bit 0
-     ||||||+--- (RW)  M1   : Timer 0 Mode bit 1
+     ||||||+--- (RW)  M1   : Timer 0 Mode bit 1 (16-bit counter)
      |||||+---- (RW)  C/~T : Timer 0 Timer or counter (timer)
      ||||+----- (RW)  GATE : Timer 0 Timer enabled whenever TR bit is set
      |||+------ (RW)  M0   : Timer 1 Mode bit 0

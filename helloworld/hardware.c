@@ -19,7 +19,7 @@ void hardware_init() {
     //        Fclk = 12000000 * 2 (12T mode)
     // of = -------------------
     //       16* [0xFFFF + 1 - RCAP]
-    // ~57692 ~ 57600 bps
+    // 0xFFF3 ~ 57692 ~ 57600 bps
     RCAP2L = 0xF3;     //Initial timer value
     RCAP2H = 0xFF;     //Initial timer value
     //
