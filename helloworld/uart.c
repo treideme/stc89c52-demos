@@ -4,33 +4,29 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-#include "circular.h"
+#include "burst.h"
 #include "stc89xx.h"
 
-static volatile circular_buf_t s_uart_tx_buf;
+static volatile burst_buf_t s_uart_tx_buf;
 
-int8_t uart_putc(const char c) {\
-    ES = 0; // Disable UART interrupt
+void uart_putc(char c) {\
+    while(!burst_empty(s_uart_tx_buf));
 
-    // Seed transmission
-    if(circular_buffer_empty(&s_uart_tx_buf)) // check if we need to seed UART transmission
-        SBUF = c; //Send data to UART buffer
-
-    int8_t res = circular_put(&s_uart_tx_buf, c);       // push char to queue
+    burst_init(s_uart_tx_buf, &c, 1);
+    SBUF = burst_peek(s_uart_tx_buf);
 
     // Enable UART interrupts
     ES = 1;
-
-    return res;
 }
 
-int8_t uart_puts(const char*str) {
-    while(*str) {
-        int8_t res = uart_putc(*str++);
-        if(res != 0)
-            return res;
-    }
-    return 0;
+void uart_puts(char*str, const int8_t len) {
+    while(!burst_empty(s_uart_tx_buf));
+
+    burst_init(s_uart_tx_buf, str, len);
+    SBUF = burst_peek(s_uart_tx_buf);
+
+    // Enable UART interrupts
+    ES = 1;
 }
 
 void uart_isr_callback(void) {
@@ -40,11 +36,10 @@ void uart_isr_callback(void) {
     }
     if (TI) {
         TI = 0;              //Clear transmit interrupt flag
-        circular_pop(&s_uart_tx_buf);
+        burst_pop(s_uart_tx_buf);
 
-        if(!circular_buffer_empty(&s_uart_tx_buf)) {
-            char d = circular_peek(&s_uart_tx_buf);
-            SBUF = d;
+        if(!burst_empty(s_uart_tx_buf)) {
+            SBUF = burst_peek(s_uart_tx_buf);
         }
     }
 }

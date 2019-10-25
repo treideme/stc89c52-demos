@@ -4,9 +4,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
-int8_t uart_putc(const char c);
-int8_t uart_puts(const char*str);
-int8_t uart_putsn(const char*str, const size_t len);
+#define uart_putsz(str) uart_puts(str, sizeof(str))
+
+void uart_putc(char c);
+void uart_puts(char*str, const int8_t len);
 void uart_isr_callback(void);
 
 #endif /* _uart_h_ */

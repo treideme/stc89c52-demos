@@ -99,7 +99,7 @@ void main() {
     while (1) {
         P2_0 = !P2_0;
         P2_1 = 1;
-        uart_puts("Hello World\r\n");
+        uart_putsz("Hello World\r\n");
         P2_1 = 0;
         delay(30000);
     }

@@ -18,9 +18,9 @@ void hardware_init() {
     // baud rate
     //        Fclk = 12000000 * 2 (12T mode)
     // of = -------------------
-    //       32* [0xFFFF - RCAP]
-    // ~9615 ~ 9600 bps
-    RCAP2L = 0xD9;     //Initial timer value
+    //       16* [0xFFFF + 1 - RCAP]
+    // ~57692 ~ 57600 bps
+    RCAP2L = 0xF3;     //Initial timer value
     RCAP2H = 0xFF;     //Initial timer value
     //
     T2_MOD = INIT_T2_MOD;
