@@ -8,6 +8,8 @@
 #include "stc89xx.h"
 
 static volatile burst_buf_t s_uart_tx_buf;
+static volatile uint8_t s_uart_rx_byte;
+static volatile uint8_t s_uart_rx_full;
 
 void uart_putc(char c) {\
     while(!burst_empty(s_uart_tx_buf));
@@ -29,10 +31,25 @@ void uart_puts(char*str, const int8_t len) {
     ES = 1;
 }
 
+uint8_t uart_pollc(char*c) {
+    uint8_t sz = 0;
+    if(s_uart_rx_full) {
+        *c = s_uart_rx_byte;
+        s_uart_rx_full = 0;
+        sz = 1;
+    }
+
+    return sz;
+}
+
 void uart_isr_callback(void) {
     if (RI) {
         RI = 0;             //Clear receive interrupt flag
-        P0 = SBUF;          //P0 show UART data
+
+        if(!s_uart_rx_full) {
+            s_uart_rx_byte = SBUF;
+            s_uart_rx_full = 1;
+        }
     }
     if (TI) {
         TI = 0;              //Clear transmit interrupt flag

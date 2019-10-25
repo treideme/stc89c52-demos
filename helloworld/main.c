@@ -97,9 +97,15 @@ void main() {
     EA = 1;                 //Open master interrupt switch
 
     while (1) {
+        char c;
         P2_0 = !P2_0;
         P2_1 = 1;
-        uart_putsz("Hello World\r\n");
+        uint8_t sz = uart_pollc(&c);
+        if(sz) {
+            uart_putsz("Hello World (got)\r\n");
+        } else {
+            uart_putsz("Hello World\r\n");
+        }
         P2_1 = 0;
         delay(30000);
     }
