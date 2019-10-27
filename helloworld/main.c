@@ -8,7 +8,7 @@
 #include <mcs51/8051.h>
 #include "hardware.h"
 #include "uart.h"
-#include "pwm.h"
+#include "lcd_seg.h"
 
 /******************************************************************************\
 * Private type definitions
@@ -62,7 +62,12 @@ void INT1_interrupt() __interrupt(IE1_VECTOR) { }
  * Timer1 Interrupt handler.
  */
 void Timer1_interrupt() __interrupt(TF1_VECTOR) {
-    timer1_callback();
+    TR1 = 0;    // Reload timer to 1kHz
+    TH1 = 0xF8;
+    TL1 = 0x38;
+    TR1 = 1;
+
+    lcd_seg_update_handler();
 }
 
 /**
@@ -96,21 +101,18 @@ void INT3_interrupt() __interrupt(IE3_VECTOR) { }
  */
 void main() {
     hardware_init();
-    pwm_start(100, 10);
-    ES = 1;                 //Enable UART interrupt
-    EA = 1;                 //Open master interrupt switch
+
+    uint32_t count = 0x0;
 
     while (1) {
         char c;
-        P2_0 = !P2_0;
-        P2_1 = 1;
+        lcd_set_decimal(count++, 3);
         uint8_t sz = uart_pollc(&c);
         if(sz) {
             uart_putsz("Hello World (got)\r\n");
         } else {
             uart_putsz("Hello World\r\n");
         }
-        P2_1 = 0;
         delay(30000);
     }
 }

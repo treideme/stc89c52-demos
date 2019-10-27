@@ -58,9 +58,9 @@
  * | 19  | XTAL2 |
  * | 20  | GND   |
  * | 21  | P2.0  |  IN  |  PU   | GPIO     |
- * | 22  | P2.1  |  IN  |  PU   | GPIO     |
- * | 23  | P2.2  |  IN  |  PU   | GPIO     |
- * | 24  | P2.3  |  IN  |  PU   | GPIO     |
+ * | 22  | P2.1  |  IN  |  PU   | GPIO     | 74LS138-A (7-Segment select)
+ * | 23  | P2.2  |  IN  |  PU   | GPIO     | 74LS138-B (7-Segment select)
+ * | 24  | P2.3  |  IN  |  PU   | GPIO     | 74LS138-C (7-Segment select)
  * | 25  | P2.4  |  IN  |  PU   | GPIO     |
  * | 26  | P2.5  |  IN  |  PU   | GPIO     |
  * | 27  | P2.6  |  IN  |  PU   | GPIO     |

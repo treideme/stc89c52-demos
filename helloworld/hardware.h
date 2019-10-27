@@ -88,7 +88,7 @@
 */
 
 #define INIT_TMOD \
-  B8(00100000) /**< TMOD  Timer Mode. @verbatim
+  B8(00010000) /**< TMOD  Timer Mode. @verbatim
      00000000 = reset
      ||||||||
      |||||||+-- (RW)  M0   : Timer 0 Mode bit 0
@@ -100,7 +100,7 @@
      |+-------- (RW)  C/~T : Timer 1 Timer or counter (timer)
      +--------- (RW)  GATE : Timer 1 Timer enabled whenever TR bit is set
 
-  | M0 | M1 | Operating Mode
+  | M1 | M0 | Operating Mode
   |----|----|---------------
   | 0  | 0  | 8-bit Timer/Counter "THx" with "TLx" as 5-bit prescaler.
   | 0  | 1  | 16-bit Timer/Counter"THx"and"TLx"are cascaded;there is no prescaler
@@ -180,7 +180,7 @@
 */
 
 #define INIT_IE \
-  B8(10010000) /**< IE  Interrupt Enable Register.
+  B8(10011000) /**< IE  Interrupt Enable Register.
      00000000 = reset
      ||||||||
      |||||||+-- (RW)  EX0  : External Interrupt 0

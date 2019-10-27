@@ -13,6 +13,10 @@ void hardware_init() {
     TCON = INIT_TCON;
     TMOD = INIT_TMOD;
 
+    // Initialise Timer2 in Mode 3
+    TH1 = 0xF8; // ~1Khz
+    TL1 = 0x38;
+
     // Initialise Timer2 registers for baud rate generation
     // T2_overflow = 0xFFFC
     // baud rate
@@ -37,4 +41,7 @@ void hardware_init() {
 
     // Enable all desired interrupts
     IE = INIT_IE;
+
+    // Run timer
+    TR1 = 1;
 }
