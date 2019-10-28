@@ -9,6 +9,7 @@
 #define TIMER_INTERRUPT_ENABLE ET1
 
 extern uint32_t g_lcd_seg_value;
+extern uint8_t g_lcd_enable;
 
 /**
  * This function cycles the LCD value on the external interface.

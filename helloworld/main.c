@@ -9,6 +9,7 @@
 #include "hardware.h"
 #include "uart.h"
 #include "lcd_seg.h"
+#include "button_array.h"
 
 /******************************************************************************\
 * Private type definitions
@@ -67,6 +68,7 @@ void Timer1_interrupt() __interrupt(TF1_VECTOR) {
     TL1 = 0x38;
     TR1 = 1;
 
+    buttons_poll();
     lcd_seg_update_handler();
 }
 
@@ -102,11 +104,9 @@ void INT3_interrupt() __interrupt(IE3_VECTOR) { }
 void main() {
     hardware_init();
 
-    uint32_t count = 0x0;
-
     while (1) {
         char c;
-        lcd_set_decimal(count++, 3);
+        lcd_set_decimal(g_buttons_state,-1);
         uint8_t sz = uart_pollc(&c);
         if(sz) {
             uart_putsz("Hello World (got)\r\n");

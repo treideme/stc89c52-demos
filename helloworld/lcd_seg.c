@@ -18,7 +18,7 @@ static int8_t s_dot_digit = -1;
  * |     |
  * +--D--+ (d)
  */
-const uint8_t s_value_to_hex_segment[] = {
+static const uint8_t s_value_to_hex_segment[] = {
         //dGFEDCBA
         0b00111111, // 0
         0b00000110, // 1
@@ -42,6 +42,11 @@ const uint8_t s_value_to_hex_segment[] = {
  * Value to write to the segment.
  */
 uint32_t g_lcd_seg_value;
+
+/**
+ * Latch to disable LCD.
+ */
+uint8_t g_lcd_enable = 1;
 
 static uint8_t s_digit(uint32_t *value, uint32_t numerator) {
     uint8_t digit = 0;
@@ -87,18 +92,21 @@ int8_t lcd_set_decimal(uint32_t value, int8_t dot_digit) {
 void lcd_seg_update_handler(void) {
     // Disable segments
     LATCH_PIN  = 0;
-    // Select segment to update
-    SN74LS138_SET(s_current_segment);
 
-    uint8_t current_val = (g_lcd_seg_value>>(4*s_current_segment))&0xF;
-    current_val = s_value_to_hex_segment[current_val];
-    if(s_current_segment == s_dot_digit)
-        DIGIT_PORT = current_val | 0b10000000;
-    else
-        DIGIT_PORT = current_val;
-    LATCH_PIN  = 1;
+    if(g_lcd_enable) {
+        // Select segment to update
+        SN74LS138_SET(s_current_segment);
 
-    s_current_segment++;
-    if(s_current_segment == 8)
-        s_current_segment = 0;
+        uint8_t current_val = (g_lcd_seg_value>>(4*s_current_segment))&0xF;
+        current_val = s_value_to_hex_segment[current_val];
+        if(s_current_segment == s_dot_digit)
+            DIGIT_PORT = current_val | 0b10000000;
+        else
+            DIGIT_PORT = current_val;
+        LATCH_PIN  = 1;
+
+        s_current_segment++;
+        if(s_current_segment == 8)
+            s_current_segment = 0;
+    }
 }
