@@ -5,7 +5,6 @@
 #include <mcs51/8051.h>
 
 #define DIGIT_PORT             P0
-#define LATCH_PIN              P1_0
 #define TIMER_INTERRUPT_ENABLE ET1
 
 extern uint32_t g_lcd_seg_value;

@@ -10,6 +10,7 @@
 #include "uart.h"
 #include "lcd_seg.h"
 #include "button_array.h"
+#include "shift.h"
 
 /******************************************************************************\
 * Private type definitions
@@ -103,6 +104,7 @@ void INT3_interrupt() __interrupt(IE3_VECTOR) { }
  */
 void main() {
     hardware_init();
+    uint8_t data = 0x01;
 
     while (1) {
         char c;
@@ -113,6 +115,10 @@ void main() {
         } else {
             uart_putsz("Hello World\r\n");
         }
+        // LED8..15
+        P3_5 = 0;
+        SHIFT_OUT(P3_4, P3_6, ~g_buttons_state);
+        P3_5 = 1;
         delay(30000);
     }
 }

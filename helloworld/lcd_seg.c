@@ -91,7 +91,7 @@ int8_t lcd_set_decimal(uint32_t value, int8_t dot_digit) {
 
 void lcd_seg_update_handler(void) {
     // Disable segments
-    LATCH_PIN  = 0;
+    DIGIT_PORT  = 0;
 
     if(g_lcd_enable) {
         // Select segment to update
@@ -103,7 +103,6 @@ void lcd_seg_update_handler(void) {
             DIGIT_PORT = current_val | 0b10000000;
         else
             DIGIT_PORT = current_val;
-        LATCH_PIN  = 1;
 
         s_current_segment++;
         if(s_current_segment == 8)
