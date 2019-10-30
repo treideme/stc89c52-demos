@@ -11,6 +11,7 @@
 #include "lcd_seg.h"
 #include "button_array.h"
 #include "shift.h"
+#include "ds1302.h"
 
 /******************************************************************************\
 * Private type definitions
@@ -106,19 +107,26 @@ void main() {
     hardware_init();
     uint8_t data = 0x01;
 
+    DS1302_write(0x8E, 0x00);
+    DS1302_write(0x80, 0x00);
+    DS1302_write(0x8E, 0x80);
+
     while (1) {
+        // Poll DS1302 for time
+        uint8_t seconds = DS1302_read(0x81);
+
         char c;
-        lcd_set_decimal(g_buttons_state,-1);
+        lcd_set_decimal(seconds,-1);
         uint8_t sz = uart_pollc(&c);
         if(sz) {
             uart_putsz("Hello World (got)\r\n");
         } else {
             uart_putsz("Hello World\r\n");
         }
-        // LED8..15
-        P3_5 = 0;
-        SHIFT_OUT(P3_4, P3_6, ~g_buttons_state);
-        P3_5 = 1;
+//        // LED8..15 (Enable JP595 for this to work)
+//        P3_5 = 0;
+//        SHIFT_OUT(P3_4, P3_6, ~g_buttons_state);
+//        P3_5 = 1;
         delay(30000);
     }
 }

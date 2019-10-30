@@ -12,8 +12,8 @@
     uint8_t data_tmp = data;                \
     for(volatile uint8_t i=0; i < 8; i++) { \
         dp = data_tmp & 0x01;               \
-        data_tmp>>=1;                       \
         cp = 1;                             \
+        data_tmp>>=1;                       \
         cp = 0;                             \
     } \
     } \
