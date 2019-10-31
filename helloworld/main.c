@@ -12,6 +12,7 @@
 #include "button_array.h"
 #include "shift.h"
 #include "ds1302.h"
+#include "i2c.h"
 
 /******************************************************************************\
 * Private type definitions
@@ -115,8 +116,17 @@ void main() {
         // Poll DS1302 for time
         uint8_t seconds = DS1302_read(0x81);
 
+        i2c_start();
+        uint8_t i2c_data = 0x55;
+        i2c_write(0xA0); // Address EEPROM
+        i2c_write(0x00); // Address EEPROM
+        i2c_start();
+        i2c_write(0xA1); // Address EEPROM
+        i2c_read(&i2c_data);
+        i2c_stop();
+
         char c;
-        lcd_set_decimal(seconds,-1);
+        lcd_set_decimal(seconds|((uint16_t)i2c_data<<8),-1);
         uint8_t sz = uart_pollc(&c);
         if(sz) {
             uart_putsz("Hello World (got)\r\n");
