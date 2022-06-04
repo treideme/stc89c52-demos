@@ -31,7 +31,12 @@ ninja -v -C ./build flash_<hexname>
 ### 00 Hello World
 
 This demo is a simple hello world application that toggles a LED on pin
-P1.0.
+P2.0.
+
+```shell
+# Flash using ...
+ninja -v -C ./build flash_00_hello
+```
 
 ----
 [(C) 2022](LICENSE) [Thomas Reidemeister](https://reidemeister.com)
