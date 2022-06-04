@@ -16,7 +16,7 @@ ninja -v -C ./build
 
 ## Flashing
 
-These examples use [stcgal](https://github.com/grigorig/stcgal) as flashing tool.
+These examples use [stcgal](https://github.com/nrife/stcgal) as flashing tool.
 Flashing for particular versions of the firmware can be done via ninja.
 
 ```shell

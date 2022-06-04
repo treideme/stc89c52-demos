@@ -20,10 +20,10 @@ static void delay(unsigned int t);
 
 void main() {
   for(;;) {
-    // Toggle LED at P1_0
-    P1_0 = 1;
+    // Toggle LED at P2_0
+    P2_0 = 0;
     delay(30000);
-    P1_0 = 0;
+    P2_0 = 1;
     delay(30000);
   }
 }
