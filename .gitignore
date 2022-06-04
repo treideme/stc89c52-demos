@@ -1,3 +1,9 @@
+# Python venv for stcgal
+venv
+
+# IDE files
+.idea
+
 # Prerequisites
 *.d
 
