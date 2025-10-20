@@ -1,0 +1,3 @@
+compilers:
+  - description: SDCC for MCS-51
+    match-compiler-exe: "(.*/)?sdcc(.exe)?"
