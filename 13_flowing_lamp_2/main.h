@@ -1,0 +1,14 @@
+#ifndef	__MAIN_H__
+#define __MAIN_H__
+
+#include <mcs51/8051.h>
+#include <stdio.h>
+#include <math.h>
+#include <stdint.h>
+#include "delay.h"
+
+void init_mcu(void);
+void dis_cled(void);
+void dis_chaLed(void);
+
+#endif
