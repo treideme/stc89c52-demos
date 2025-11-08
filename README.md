@@ -40,7 +40,8 @@ P2.0.
 ```shell
 # Flash using ...
 ninja -v -C ./build flash_00_hello
-# Adjust the meson.build file to point to the COM port your serial flasher enumerates to.
+# Adjust the meson.build file to point to the COM port your serial flasher enumerates to. And power-cycle the target after
+# issuing the flash command.
 ```
 
 Manual boostrap of this example without a dev-kit should be doable as follows.
@@ -48,5 +49,32 @@ Manual boostrap of this example without a dev-kit should be doable as follows.
 ![Hello World](00_hello/connections.png)
 [Drawing source](00_hello/connections.fzz).
 
+### 01 LED Button
+
+This is a simple example that lights up an LED `D1`-`D4` whenever the corresponding buttons `K1`-`K4` are pressed on
+the HC6800-ES development kit. The circuit connections are shown below note `RxD` and `TxD` map to `P3.0` and `P3.1` respectively.
+
+![Button interface](01_led_button/button_interface_direct.png)
+![LED interface](01_led_button/led_interface_direct.png)
+
+```shell
+# Flash using ...
+ninja -v -C ./build flash_01_led_button
+# Adjust the meson.build file to point to the COM port your serial flasher enumerates to. And power-cycle the target after
+# issuing the flash command.
+```
+
+### 01 LED Button Timer
+
+Uses timer interrupts to poll the button states and update the LED states accordingly in `50 ms` intervals.
+
+```shell
+# Flash using ...
+ninja -v -C ./build flash_01_led_button_timer
+# Adjust the meson.build file to point to the COM port your serial flasher enumerates to. And power-cycle the target after
+# issuing the flash command.
+```
+
+
 ----
-[(C) 2022](LICENSE) [Thomas Reidemeister](https://reidemeister.com)
+[(C) 2025](LICENSE) [Thomas Reidemeister](https://reidemeister.com)
