@@ -75,6 +75,17 @@ ninja -v -C ./build flash_01_led_button_timer
 # issuing the flash command.
 ```
 
+### 01 LED Buzzer
+
+This demo extends the button and LED demo by adding a buzzer that sounds whenever any button is pressed.
+
+```shell
+# Flash using ...
+ninja -v -C ./build flash_01_led_buzzer
+# Adjust the meson.build file to point to the COM port your serial flasher enumerates to. And power-cycle the target after
+# issuing the flash command.
+``` 
+
 
 ----
 [(C) 2025](LICENSE) [Thomas Reidemeister](https://reidemeister.com)
