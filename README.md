@@ -51,6 +51,8 @@ Manual boostrap of this example without a dev-kit should be doable as follows.
 
 ### 01 LED Button
 
+![LED Button](01_led_button/01_led_button.gif)
+
 This is a simple example that lights up an LED `D1`-`D4` whenever the corresponding buttons `K1`-`K4` are pressed on
 the HC6800-ES development kit. The circuit connections are shown below note `RxD` and `TxD` map to `P3.0` and `P3.1` respectively.
 
@@ -66,6 +68,8 @@ ninja -v -C ./build flash_01_led_button
 
 ### 01 LED Button Timer
 
+![LED Button Timer](01_led_button_timer/01_led_button_timer.gif)
+
 Uses timer interrupts to poll the button states and update the LED states accordingly in `50 ms` intervals.
 
 ```shell
@@ -75,7 +79,15 @@ ninja -v -C ./build flash_01_led_button_timer
 # issuing the flash command.
 ```
 
+### 01 LED Button Timer with Hysteresis
+
+Same as above but adds simple hysteresis to the button handling to avoid bouncing effects so the effective time is `1 s`.
+
+![LED Button Timer](01_led_button_timer/01_led_button_timer.gif)
+
 ### 01 LED Buzzer
+
+![LED Buzzer](01_led_buzzer/01_led_buzzer.gif)
 
 This demo extends the button and LED demo by adding a buzzer that sounds whenever any button is pressed.
 
