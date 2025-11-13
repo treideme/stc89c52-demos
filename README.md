@@ -116,6 +116,25 @@ ninja -v -C ./build flash_01_led_74H595
 ### 01 LED Matrix 8x8 with 74HC595
 ![LED Matrix 8x8 with 74HC595](01_led_matrix/01_led_matrix.gif)
 
+Illustration how to use a 8x8 LED matrix display.
+
+```shell
+# Flash using ...
+ninja -v -C ./build flash_01_led_matrix
+# Adjust the meson.build file to point to the COM port your serial flasher enumerates to. And power-cycle the target after
+# issuing the flash command.
+```
+
+### 01 LED Matrix and Hex Keypad
+![LED Matrix and Hex Keypad](01_button_led_matrix/button_led_matrix.gif)
+Expansion of the previous demo by adding a hex keypad to control the display.
+
+```shell
+# Flash using ...
+ninja -v -C ./build flash_01_button_led_matrix
+# Adjust the meson.build file to point to the COM port your serial flasher enumerates to. And power-cycle the target after
+# issuing the flash command.
+```
 
 
 ----

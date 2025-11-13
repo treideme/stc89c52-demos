@@ -31,6 +31,7 @@ progs = [
     ['01_led_buzzer', '01_led_buzzer.hex', ['01_led_buzzer/led_buzzer.c'], 'LED and Buzzer Example Timer with Hysteresis'],
     ['01_led_74H595', '01_led_74H595.hex', ['01_led_74H595/led_74H595.c'], '74H595 Shift Register Example'],
     ['01_led_matrix', '01_led_matrix.hex', ['01_led_matrix/led_matrix.c'], '8x8 Matrix Example'],
+    ['01_button_led_matrix', '01_button_led_matrix.hex', ['01_button_led_matrix/button_led_matrix.c'], '8x8 Matrix Example'],
 ]
 
 # Build automation
