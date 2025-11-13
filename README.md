@@ -98,6 +98,25 @@ ninja -v -C ./build flash_01_led_buzzer
 # issuing the flash command.
 ``` 
 
+### 01 LED 74HC595 Array
+
+![LED 74HC595 Array](01_led_74H595/01_led_74H595.gif)
+
+This demo shows how to use a 74HC595 shift register to drive an array of 8 LEDs using only 3 pins from the microcontroller.
+
+Note on the HC6800-ES development kit, `JP595` and `JPOE` need to be set to connect the 74HC595.
+
+```shell
+# Flash using ...
+ninja -v -C ./build flash_01_led_74H595
+# Adjust the meson.build file to point to the COM port your serial flasher enumerates to. And power-cycle the target after
+# issuing the flash command.
+```
+
+### 01 LED Matrix 8x8 with 74HC595
+![LED Matrix 8x8 with 74HC595](01_led_matrix/01_led_matrix.gif)
+
+
 
 ----
 [(C) 2025](LICENSE) [Thomas Reidemeister](https://reidemeister.com)
