@@ -11,25 +11,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * @file led_button.c Hello World project for the STC89C52 chip.
+ * @file led_button.c Simple LED button mirroring.
  * @author Thomas Reidemeister
  */
 #include <mcs51/8051.h>
 
-static void delay(unsigned int t);
-
 void main(void) {
   for(;;) {
-    // Toggle LED at P2_0
-    P2_0 = 0;
-    delay(30000);
-    P2_0 = 1;
-    delay(30000);
+    // Toggle LED at P2_0..P2_3 when buttons at P3_0..P3_3 are pressed
+    P2_0 = P3_1;
+    P2_1 = P3_0;
+    P2_2 = P3_2;
+    P2_3 = P3_3;
   }
 }
-
-static void delay(unsigned int t) {
-  while (t--)
-    ;
-}
-

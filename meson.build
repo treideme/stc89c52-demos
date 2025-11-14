@@ -9,12 +9,12 @@ cc = find_program('sdcc', required : true)
 stcgal = find_program('stcgal', required : true)
 
 # Compile commands for sdcc
-cc_args = ['-mmcs51', '--Werror', '--std-c99', '--out-fmt-ihx']
+cc_args = ['-mmcs51', '--Werror', '--std-c23', '--out-fmt-ihx']
 # Link commands for sdcc
 cc_incs = []
 
 # Flashing arguments for STCGAL
-stcgal_args = ['-P', 'stc89a', '-p', '/dev/ttyUSB0']
+stcgal_args = ['-P', 'stc89a', '-p', '/dev/ttyUSB0', '-b', '9600']
 
 # Since SDCC is not natively supported in meson, make it a generator...
 compiler = generator(cc,
@@ -25,6 +25,13 @@ compiler = generator(cc,
 # Laundry list of example
 progs = [
     ['00_hello', '00_hello.hex', ['00_hello/hello.c'], 'Hello World Example'],
+    ['01_led_button', '01_led_button.hex', ['01_led_button/led_button.c'], 'LED Button Example'],
+    ['01_led_button_timer', '01_led_button_timer.hex', ['01_led_button_timer/led_button.c'], 'LED Button Example Timer'],
+    ['01_led_button_hyst', '01_led_button_hyst.hex', ['01_led_button_hyst/led_button.c'], 'LED Button Example Timer with Hysteresis'],
+    ['01_led_buzzer', '01_led_buzzer.hex', ['01_led_buzzer/led_buzzer.c'], 'LED and Buzzer Example Timer with Hysteresis'],
+    ['01_led_74H595', '01_led_74H595.hex', ['01_led_74H595/led_74H595.c'], '74H595 Shift Register Example'],
+    ['01_led_matrix', '01_led_matrix.hex', ['01_led_matrix/led_matrix.c'], '8x8 Matrix Example'],
+    ['01_button_led_matrix', '01_button_led_matrix.hex', ['01_button_led_matrix/button_led_matrix.c'], '8x8 Matrix Example'],
 ]
 
 # Build automation
