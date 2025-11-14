@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * @file led_button.c Hello World project for the STC89C52 chip.
+ * @file led_button.c Simple LED button mirroring.
  * @author Thomas Reidemeister
  */
 #include <mcs51/8051.h>

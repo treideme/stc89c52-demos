@@ -1,20 +1,22 @@
 # A Collection of STC89C52 Demos using SDCC
 
 See this [blog entry](https://reidemeister.com/blog/2022.06.04) for the start of the series and background for this code.
+And the entire [STC89C52 SDCC series](https://reidemeister.com/blog/category/8051).
 
-## Prerequisites
+# Prerequisites
  * [SDCC Compiler](http://sdcc.sourceforge.net/)
  * [Meson Build System](https://mesonbuild.com/)
- * [STC89C52RC development kit](doc/HC6800-ES%20Schematic.pdf) or [bootstrap circuits explained here](https://www.reidemeister.com/?p=295)
+ * [STC89C52RC development kit](doc/HC6800-ES%20Schematic.pdf) or [bootstrap circuits explained here](https://reidemeister.com/blog/2022.06.04)
+ * [stcgal for flashing](https://github.com/nrife/stcgal)
 
-## Building
+# Building
 
 ```shell
 meson build
 ninja -v -C ./build
 ```
 
-## Flashing
+# Flashing
 
 These examples use [stcgal](https://github.com/nrife/stcgal) as flashing tool.
 Flashing for particular versions of the firmware can be done via ninja.
@@ -28,14 +30,19 @@ ninja -v -C ./build flash_<hexname>
 # Power-cycle target to see new firmware running
 ```
 
-## Demos
+# Demos
 
-### 00 Hello World
+The demos span multiple topics and are grouped by my respective blog posts.
+
+ 0. [Hello World](#0-hello-world)
+ 1. [Basic LED and Button Interfacing](#1-basic-led-and-button-interfacing)
+
+## 0. Hello World
 
 ![Hello World](00_hello/00_hello.gif)
 
 This demo is a simple hello world application that toggles a LED on pin
-P2.0.
+P2.0. This is covered in the [first blog post of the series](https://reidemeister.com/blog/2022.06.04).
 
 ```shell
 # Flash using ...
@@ -49,7 +56,11 @@ Manual boostrap of this example without a dev-kit should be doable as follows.
 ![Hello World](00_hello/connections.png)
 [Drawing source](00_hello/connections.fzz).
 
-### 01 LED Button
+## 1. Basic LED and Button Interfacing
+
+These examples are covered in this [blog post](https://reidemeister.com/blog/2025.11.01) of the series.
+
+### LED Button
 
 ![LED Button](01_led_button/01_led_button.gif)
 
@@ -66,7 +77,7 @@ ninja -v -C ./build flash_01_led_button
 # issuing the flash command.
 ```
 
-### 01 LED Button Timer
+### LED Button Timer
 
 ![LED Button Timer](01_led_button_timer/01_led_button_timer.gif)
 
@@ -79,13 +90,13 @@ ninja -v -C ./build flash_01_led_button_timer
 # issuing the flash command.
 ```
 
-### 01 LED Button Timer with Hysteresis
+### LED Button Timer with Debouncing
 
-Same as above but adds simple hysteresis to the button handling to avoid bouncing effects so the effective time is `1 s`.
+Same as above but adds simple debouncing to the button handling to avoid bouncing effects so the effective time is `1 s`.
 
 ![LED Button Timer](01_led_button_timer/01_led_button_timer.gif)
 
-### 01 LED Buzzer
+### LED and Buzzer
 
 ![LED Buzzer](01_led_buzzer/01_led_buzzer.gif)
 
@@ -98,7 +109,7 @@ ninja -v -C ./build flash_01_led_buzzer
 # issuing the flash command.
 ``` 
 
-### 01 LED 74HC595 Array
+### LED Multiplexing With 74HC595 Array
 
 ![LED 74HC595 Array](01_led_74H595/01_led_74H595.gif)
 
@@ -113,7 +124,7 @@ ninja -v -C ./build flash_01_led_74H595
 # issuing the flash command.
 ```
 
-### 01 LED Matrix 8x8 with 74HC595
+### LED Matrix 8x8 Display with 74HC595 Column Driver
 ![LED Matrix 8x8 with 74HC595](01_led_matrix/01_led_matrix.gif)
 
 Illustration how to use a 8x8 LED matrix display.
@@ -125,7 +136,7 @@ ninja -v -C ./build flash_01_led_matrix
 # issuing the flash command.
 ```
 
-### 01 LED Matrix and Hex Keypad
+### LED Matrix and Hex Keypad
 ![LED Matrix and Hex Keypad](01_button_led_matrix/button_led_matrix.gif)
 Expansion of the previous demo by adding a hex keypad to control the display.
 
@@ -135,7 +146,6 @@ ninja -v -C ./build flash_01_button_led_matrix
 # Adjust the meson.build file to point to the COM port your serial flasher enumerates to. And power-cycle the target after
 # issuing the flash command.
 ```
-
 
 ----
 [(C) 2025](LICENSE) [Thomas Reidemeister](https://reidemeister.com)

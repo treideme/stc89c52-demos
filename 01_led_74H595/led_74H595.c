@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * @file led_74H595.c Hello World project for the STC89C52 chip.
+ * @file led_74H595.c Multiplexing LEDs with shift registers.
  * @author Thomas Reidemeister
  */
 #include <mcs51/8051.h>
