@@ -147,5 +147,21 @@ ninja -v -C ./build flash_01_button_led_matrix
 # issuing the flash command.
 ```
 
+## Complex Displays and Input Devices
+
+### 02 7-Segment Display
+
+![7-Segment Display](02_7_segment/02_7seg_single.gif)
+
+This demo shows how to interface a single 7-segment display to the STC89C52 microcontroller for displaying
+a single digit number with a lookup table.
+
+```shell
+# Flash using ...
+ninja -v -C ./build flash_02_7_segment
+# Adjust the meson.build file to point to the COM port your serial flasher enumerates to. And power-cycle the target after
+# issuing the flash command.
+```
+
 ----
 [(C) 2025](LICENSE) [Thomas Reidemeister](https://reidemeister.com)
