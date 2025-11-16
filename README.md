@@ -149,6 +149,8 @@ ninja -v -C ./build flash_01_button_led_matrix
 
 ## Complex Displays and Input Devices
 
+See the second blog post in the series [here](https://reidemeister.com/blog/2025.11.15).
+
 ### 02 7-Segment Display
 
 ![7-Segment Display](02_7_segment/02_7seg_single.gif)
@@ -162,6 +164,24 @@ ninja -v -C ./build flash_02_7_segment
 # Adjust the meson.build file to point to the COM port your serial flasher enumerates to. And power-cycle the target after
 # issuing the flash command.
 ```
+
+### 02 7-Segment Multiplexed Display
+
+![7-Segment Multiplexed Display](02_7_segment_dyn/02_7seg_dyn.gif)
+
+This demo shows how to interface a multiplexed 4-digit 7-segment display to the STC89C52 microcontroller
+for displaying a 8-digit number with a lookup table and multiplexing.
+
+```shell
+# Flash using ...
+ninja -v -C ./build flash_02_7_segment_dyn
+# Adjust the meson.build file to point to the COM port your serial flasher enumerates to. And power-cycle the target after
+# issuing the flash command.
+```
+
+At speed it looks like this:
+![7-Segment Multiplexed Display Fast](02_7_segment_dyn/02_7seg_dyn.png)
+
 
 ----
 [(C) 2025](LICENSE) [Thomas Reidemeister](https://reidemeister.com)

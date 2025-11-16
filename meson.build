@@ -35,6 +35,7 @@ progs = [
     ['01_button_led_matrix', '01_button_led_matrix.hex', ['01_button_led_matrix/button_led_matrix.c'], '8x8 Matrix Example'],
 
     ['02_7_segment', '02_7_segment.hex', ['02_7_segment/segment.c'], '7 Segment Example'],
+    ['02_7_segment_dyn', '02_7_segment_dyn.hex', ['02_7_segment_dyn/segment.c'], '7 Segment Example Dynamic'],
 ]
 
 # Build automation

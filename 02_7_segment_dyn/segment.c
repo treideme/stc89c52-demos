@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * @file segment.c 7 Segment display interfacing.
+ * @file segment.c 7 Segment display interfacing, dynamic switching.
  * @author Thomas Reidemeister
  */
 #include <mcs51/8051.h>
@@ -42,15 +42,26 @@ const uint8_t segment_dp = 0b10000000; // Decimal point segment
 
 #define LED_DIGIT P0
 
+void delay(uint16_t t) {
+  while (t--)
+    ;
+}
+
 void main(void) {
   P0 = 0x00; // Initialize port
+  P2 = 0x00;
 
   for(;;) {
-    // Display hex digits 0-F with decimal point on
-    for(uint8_t i=0; i<16; i++) {
+    // Display hex digits 0-7 with decimal point on, incrementing on each digitit
+    for(uint8_t i=0; i<8; i++) {
+      P2 = i<<2; // activate digit i (P2_2..P2_4)
       LED_DIGIT = segment_map[i] | segment_dp; // Display digit with decimal point
-      for(uint16_t j=0; j<60000; j++); // Simple delay
+      delay(200); // Short delay for multiplexing
+//      delay(60000); // Long delay to make multiplexing visible
       LED_DIGIT = 0x00; // Turn off all segments
     }
   }
 }
+
+
+
