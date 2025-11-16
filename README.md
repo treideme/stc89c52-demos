@@ -147,7 +147,7 @@ ninja -v -C ./build flash_01_button_led_matrix
 # issuing the flash command.
 ```
 
-## Complex Displays and Input Devices
+## 02 Seven Segment Displays
 
 See the second blog post in the series [here](https://reidemeister.com/blog/2025.11.15).
 
