@@ -36,6 +36,8 @@ progs = [
 
     ['02_7_segment', '02_7_segment.hex', ['02_7_segment/segment.c'], '7 Segment Example'],
     ['02_7_segment_dyn', '02_7_segment_dyn.hex', ['02_7_segment_dyn/segment.c'], '7 Segment Example Dynamic'],
+
+    ['03_hd44780_lcd', '03_hd44780_lcd.hex', ['03_hd44780_lcd/lcd.c'], '1602 Display Example'],
 ]
 
 # Build automation

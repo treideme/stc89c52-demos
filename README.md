@@ -182,6 +182,21 @@ ninja -v -C ./build flash_02_7_segment_dyn
 At speed it looks like this:
 ![7-Segment Multiplexed Display Fast](02_7_segment_dyn/02_7seg_dyn.png)
 
+## 03 LCD Displays
+
+See the third blog post in the series [here](https://reidemeister.com/blog/2025.11.17).
+
+![LCD Display](03_hd44780_lcd/03_lcd_example.png)
+
+This demo shows how to interface a HD44780 based character LCD to the STC89C52 microcontroller.
+
+```shell
+# Flash using ...
+ninja -v -C ./build flash_03_hd44780_lcd
+# Adjust the meson.build file to point to the COM port your serial flasher enumerates to. And power-cycle the target after
+# issuing the flash command.
+```
+
 
 ----
 [(C) 2025](LICENSE) [Thomas Reidemeister](https://reidemeister.com)
