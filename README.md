@@ -214,8 +214,22 @@ ninja -v -C ./build flash_04_st7920_lcd
 # issuing the flash command.
 ```
 
+### 04 Bitmap and Running Line Demo
 
+Running line demo on the ST7920 128x64 graphic LCD.
 
+![SI7920 Bitmap and Running Line Demo](04_st7920_graph/lcd_line.png)
+
+Bitmap demo
+
+![SI7920 Bitmap and Running Line Demo](04_st7920_graph/cindy_crawford_helmut_newton_lcd.png)
+
+```shell
+# Flash using ...
+ninja -v -C ./build flash_04_st7920_graph
+# Adjust the meson.build file to point to the COM port your serial flasher enumerates to. And power-cycle the target after
+# issuing the flash command.
+```
 
 ----
 [(C) 2025](LICENSE) [Thomas Reidemeister](https://reidemeister.com)
