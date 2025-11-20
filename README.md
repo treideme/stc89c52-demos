@@ -197,6 +197,39 @@ ninja -v -C ./build flash_03_hd44780_lcd
 # issuing the flash command.
 ```
 
+## 04 Complex Graphic LCD Displays
+
+### 04 ST7920 128x64 Graphic LCD
+
+See my blog post about this [here](https://reidemeister.com/blog/2025.11.18) for more details.
+
+![SI7920 128x64 Graphic LCD](04_st7920_lcd/8051_matrix_lcd.png)
+
+Very simple demo to show text and graphics on a 128x64 pixel ST7920 based graphic LCD.
+
+```shell
+# Flash using ...
+ninja -v -C ./build flash_04_st7920_lcd
+# Adjust the meson.build file to point to the COM port your serial flasher enumerates to. And power-cycle the target after
+# issuing the flash command.
+```
+
+### 04 Bitmap and Running Line Demo
+
+Running line demo on the ST7920 128x64 graphic LCD.
+
+![SI7920 Bitmap and Running Line Demo](04_st7920_graph/lcd_line.png)
+
+Bitmap demo
+
+![SI7920 Bitmap and Running Line Demo](04_st7920_graph/cindy_crawford_helmut_newton_lcd.png)
+
+```shell
+# Flash using ...
+ninja -v -C ./build flash_04_st7920_graph
+# Adjust the meson.build file to point to the COM port your serial flasher enumerates to. And power-cycle the target after
+# issuing the flash command.
+```
 
 ----
 [(C) 2025](LICENSE) [Thomas Reidemeister](https://reidemeister.com)

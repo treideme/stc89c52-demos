@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * @file segment.c 7 Segment display interfacing, dynamic switching.
+ * @file lcd.c 7 Segment display interfacing, dynamic switching.
  * @author Thomas Reidemeister
  */
 #include <mcs51/8051.h>
@@ -35,6 +35,19 @@
 #define HD44780_2_ROWS          0x08
 #define HD44780_POSITION        0x80
 #define HD44780_ROW2_START      0x40
+#define HD44780_CGRAM_ADDR      0x40
+#define HD44780_DRAM_ADDR       0x80
+
+const uint8_t custom_char_heart[] = {
+  0b00000,
+  0b01010,
+  0b11111,
+  0b11111,
+  0b11111,
+  0b01110,
+  0b00100,
+  0b00000
+};
 
 void delay(uint16_t t) {
   while (t--) // Simple delay loop (more than 1us at 12MHz)
@@ -86,12 +99,25 @@ void hd44780_init() { // Figure 23 from HD44780 datasheet
   hd44780_command(HD44780_ENTRY_MODE);
 }
 
+void hd44780_custom_char(uint8_t location, const uint8_t* charmap) {
+  location &= 0x7; // We only have 8 locations 0-7
+  hd44780_command(HD44780_CGRAM_ADDR | (location << 3)); // each location takes 8 bytes
+  for (uint8_t i = 0; i < 8; i++) {
+    hd44780_data(charmap[i]);
+  }
+  // Return to DDRAM
+  hd44780_command(HD44780_DRAM_ADDR);
+}
+
 void main(void) {
   hd44780_init();
+  hd44780_custom_char(0, custom_char_heart);
   hd44780_command(HD44780_DISP_ON);
   hd44780_text("Hello, World!");
   hd44780_command((HD44780_POSITION | HD44780_ROW2_START) | 1);
+  hd44780_data('\x00'); // Custom heart character
   hd44780_text("From 8051!");
+  hd44780_data('\x00'); // Custom heart character
   for(;;) {
   }
 }
