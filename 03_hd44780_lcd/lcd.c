@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * @file lcd.c 7 Segment display interfacing, dynamic switching.
+ * @file lcd.c HD44780 interfacing.
  * @author Thomas Reidemeister
  */
 #include <mcs51/8051.h>

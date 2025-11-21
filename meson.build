@@ -41,6 +41,8 @@ progs = [
 
     ['04_st7920_lcd', '04_st7920_lcd.hex', ['04_st7920_lcd/lcd.c'], '128x64 Display Example'],
     ['04_st7920_graph', '04_st7920_graph.hex', ['04_st7920_graph/lcd.c'], '128x64 Display Example Drawing'],
+
+    ['05_enc_servo', '05_enc_servo.hex', ['05_enc_servo/enc.c'], 'Encoder to LED and Servo Example'],
 ]
 
 # Build automation
