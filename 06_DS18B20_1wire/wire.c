@@ -179,14 +179,15 @@ void main(void) {
   EA  = 1; /* Enable global interrupts */
 
   for(;;) {
+    EA  = 0; /* Disable for aliasing issues */
     ds18b20_start_conversion();
-    for (uint8_t i = 0; i < 7; i++) {
+    EA = 1;
+    for (uint8_t i = 0; i < 15; i++) {
       delay(10000);
     }
+    EA  = 0; /* Disable for aliasing issues */
     temperature = ds18b20_read_temperature();
     temperature = temp_to_celsius(temperature);
-
-    EA  = 0; /* Disable for aliasing issues */
     // convert temperature to bcd
     int_to_digits(temperature, digits);
     EA = 1;
