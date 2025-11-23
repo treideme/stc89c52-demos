@@ -247,5 +247,20 @@ ninja -v -C ./build flash_06_DS18B20_1wire
 # issuing the flash command.
 ```
 
+## 07 I2C EEPROM AT24C02
+
+See my blog post about this [here](https://reidemeister.com/blog/2025.11.23) for more details.
+This demo shows how to interface an I2C EEPROM AT24C02 to the STC89C52 microcontroller,
+a button press to `K3` writes a test pattern to the EEPROM, and pressing button `K4` reads back the data.
+
+![I2C EEPROM AT24C02](07_at24c02_i2c/8051_i2c_sample.jpg)
+
+```shell
+# Flash using ...
+ninja -v -C ./build flash_07_at24c02_i2c
+# Adjust the meson.build file to point to the COM port your serial flasher enumerates to. And power-cycle the target after
+# issuing the flash command.
+```
+
 ----
 [(C) 2025](LICENSE) [Thomas Reidemeister](https://reidemeister.com)
