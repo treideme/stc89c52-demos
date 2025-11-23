@@ -231,5 +231,21 @@ ninja -v -C ./build flash_04_st7920_graph
 # issuing the flash command.
 ```
 
+## 06 Dallas DS18B20 Temperature Sensor
+
+See my blog post about this [here](https://reidemeister.com/blog/2025.11.22) for more details.
+
+This demo shows how to interface a Dallas DS18B20 temperature sensor to the STC89C52 microcontroller,
+and builds upon the previous 7-Segment demo to display the temperature readings as digital thermometer.
+
+![DS18B20 Temperature Sensor](06_DS18B20_1wire/8051_dallas_1wire.jpg)
+
+```shell
+# Flash using ...
+ninja -v -C ./build flash_06_DS18B20_1wire
+# Adjust the meson.build file to point to the COM port your serial flasher enumerates to. And power-cycle the target after
+# issuing the flash command.
+```
+
 ----
 [(C) 2025](LICENSE) [Thomas Reidemeister](https://reidemeister.com)

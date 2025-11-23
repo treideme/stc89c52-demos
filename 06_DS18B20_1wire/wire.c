@@ -28,13 +28,12 @@ void delay(uint16_t t) {
 // 1-wire interface
 
 void wire_init() { // https://www.analog.com/media/en/technical-documentation/data-sheets/ds18b20.pdf p 15
-  P3_7 = 0;   // Assert reset pulse
-  delay(480); // Hold for at least 480us
-  P3_7 = 1;   // Release bus
-  delay(5);   // Hysteresis
-  while(P3_7); // Wait for presence pulse
-  delay(100);
-  // FIXME: Add timeout to avoid infinite loop
+  DS18B20_DQ = 0;   // Assert reset pulse
+  delay(480);
+  DS18B20_DQ = 1;
+  delay(5);
+  while(DS18B20_DQ); // Wait for presence pulse (FIXME: Maybe add timeout for peripheral failures)
+  delay(500);
 }
 
 void wire_write_byte(uint8_t byte) {
@@ -44,7 +43,7 @@ void wire_write_byte(uint8_t byte) {
     j++; // small delay
     DS18B20_DQ = (byte & 0x01);  // Write bit (0 or 1 ... math also introduces needed delay)
     j = 6;
-    while(j--); // 68us
+    while(j--);
     DS18B20_DQ = 1; // Finish time slot
     byte >>= 1;
   }
@@ -58,7 +57,7 @@ uint8_t wire_read_byte(void) {
     j++; // small delay
     DS18B20_DQ = 1; // Release bus
     j = 1;
-    while(j--); // 68us
+    while(j--);
     byte |= (DS18B20_DQ<<i);
   }
   return byte;
@@ -82,7 +81,7 @@ int16_t ds18b20_read_temperature() {
 
 uint16_t temp_to_celsius(uint16_t raw) {
   // DS18B20 outputs temperature in 1/16 degrees C
-  return (raw * 10) / 16; // Return temperature in 0.1 degrees C
+  return (raw * 10) / 16; // Return temperature in 0.01 degrees C
 }
 
 // LCD code
