@@ -44,13 +44,13 @@ uint32_t pattern = 0;
 uint32_t last_pattern = 0xFFFFFFFF;
 
 void tf0_isr(void) __interrupt(TF0_VECTOR) {
-  if(ms_counter<50) {
-    ms_counter++;
-  }
-
+  P3_4 = !P3_4; // Heartbeat on P3.3
   // Reload Timer 0 for next interrupt
   TH0 = 0xfc;	/* Set Timer 0 high byte for 16-bit mode */
   TL0 = 0x18;	/* Set Timer 0 low byte for 16-bit mode */
+  if(ms_counter<50) {
+    ms_counter++;
+  }
 }
 
 void int0_isr(void) __interrupt(IE0_VECTOR) {
@@ -69,9 +69,8 @@ void int0_isr(void) __interrupt(IE0_VECTOR) {
     pattern = 0;      // Reset pattern
   } else if(pulse_count >= 0 && pulse_count < 31) {
     // Record bits after sync
-    if(cur_timer >= 2) { // Threshold between 0 and 1
-      pattern |= (uint32_t)0x00000001 << (31 - pulse_count); // MSB first
-      last_pattern = pulse_count;
+    if(cur_timer>= 2) { // Threshold between 0 and 1
+      pattern |= 0x00000001 << (31 - pulse_count); // MSB first
     }
   }
   if(pulse_count >= 32) {
@@ -116,7 +115,7 @@ void main(void) {
   P2 = 0x00;
 
   for(;;) {
-    // Display hex digits 0-7 with decimal point on, incrementing on each digitit
+    // Display hex digits 0-7 with decimal point on, incrementing on each digit
     for(uint8_t i=0; i<8; i++) {
       P2 = i<<2; // activate digit i (P2_2..P2_4)
 

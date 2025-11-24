@@ -262,5 +262,22 @@ ninja -v -C ./build flash_07_at24c02_i2c
 # issuing the flash command.
 ```
 
+## 08 Infra red Remote Control
+
+See my blog post about this [here](https://reidemeister.com/blog/2025.11.24) for more details.
+This demo shows how to interface an infra-red remote control receiver to the STC89C52 microcontroller,
+pressing buttons on the remote control displays the corresponding NEC code on the 7-segment display.
+
+![Infra red Remote Control](08_irda/8051_ir_receiver.jpg)
+
+```shell
+# Flash using ...
+ninja -v -C ./build flash_08_irda
+# Adjust the meson.build file to point to the COM port your serial flasher enumerates
+# And power-cycle the target after issuing the flash command.
+```
+
+
+
 ----
 [(C) 2025](LICENSE) [Thomas Reidemeister](https://reidemeister.com)

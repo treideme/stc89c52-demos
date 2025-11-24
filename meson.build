@@ -14,7 +14,7 @@ cc_args = ['-mmcs51', '--Werror', '--std-c23', '--out-fmt-ihx']
 cc_incs = []
 
 # Flashing arguments for STCGAL
-stcgal_args = ['-P', 'stc89a', '-p', '/dev/ttyUSB0', '-b', '9600']
+stcgal_args = ['-P', 'stc89a', '-p', '/dev/ttyUSB0', '-b', '9600'] # Force 12T mode
 
 # Since SDCC is not natively supported in meson, make it a generator...
 compiler = generator(cc,
