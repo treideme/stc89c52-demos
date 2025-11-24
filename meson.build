@@ -45,6 +45,8 @@ progs = [
     ['06_DS18B20_1wire', '06_DS18B20_1wire.hex', ['06_DS18B20_1wire/wire.c'], 'Dallas 1 Wire Temperature Sensor Example'],
 
     ['07_at24c02_i2c', '07_at24c02_i2c.hex', ['07_at24c02_i2c/i2c.c'], 'I2C EEPROM Example'],
+
+    ['08_irda', '08_irda.hex', ['08_irda/irda.c'], 'Infrared transmission Example'],
 ]
 
 # Build automation
