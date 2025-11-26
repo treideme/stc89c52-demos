@@ -47,6 +47,8 @@ progs = [
     ['07_at24c02_i2c', '07_at24c02_i2c.hex', ['07_at24c02_i2c/i2c.c'], 'I2C EEPROM Example'],
 
     ['08_irda', '08_irda.hex', ['08_irda/irda.c'], 'Infrared transmission Example'],
+
+    ['09_ethernet', '09_ethernet.hex', ['09_ethernet/ethernet.c', '09_ethernet/enc28j60.c'], 'Ethernet Communication Example'],
 ]
 
 # Build automation
