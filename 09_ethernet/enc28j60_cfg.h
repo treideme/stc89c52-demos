@@ -17,10 +17,19 @@
 #ifndef ENC28J60_CFG_H
 #define ENC28J60_CFG_H
 
-#define ENC28J60_CONTROL_CS P0_1
+#define ENC28J60_CONTROL_CS P0_3
 #define ENC28J60_SPI_SCK P0_2
-#define ENC28J60_SPI_MISO P0_3
-#define ENC28J60_SPI_MOSI P0_4
+#define ENC28J60_SPI_MISO P0_1
+#define ENC28J60_SPI_MOSI P0_0
+
+#define ENC28J60_MAC0 0x01
+#define ENC28J60_MAC1 0x02
+#define ENC28J60_MAC2 0x03
+#define ENC28J60_MAC3 0x04
+#define ENC28J60_MAC4 0x05
+#define ENC28J60_MAC5 0x06
+
+#define MIN(a,b) ((a)<(b)?(a):(b))
 
 
 #endif // ENC28J60_CFG_H

@@ -289,5 +289,7 @@ void enc28j60ReceiveOverflowRecover(void);
 //! formatted print of important ENC28J60 registers
 void enc28j60RegDump(void);
 
+uint8_t spi_byte(uint8_t d);
+
 #endif
 //@}

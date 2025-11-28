@@ -16,9 +16,25 @@
  */
 #include "enc28j60.h"
 #include "enc28j60_cfg.h"
+#define _XPRINTF_ // Enable xprintf
+#include "xprintf.h"
 
 uint8_t Enc28j60Bank;
 uint16_t NextPacketPtr;
+
+uint8_t spi_byte(uint8_t d) { // CPHA - CPOL SPI-mode 0
+  uint8_t res = 0;
+  ENC28J60_SPI_SCK = 0; // Reset state
+  for(volatile uint8_t i = 0; i < 8; i++) { // MSB first
+    ENC28J60_SPI_MOSI = d & 0x80;
+    d <<= 1;
+    ENC28J60_SPI_SCK = 1; // Valid data on rising edge
+    res |= ENC28J60_SPI_MISO; // Read bit
+    res <<= 1;
+    ENC28J60_SPI_SCK = 0; // Toggle bits on rising edge
+  }
+  return res;
+}
 
 static void delay_us(uint16_t us)
 {
@@ -79,19 +95,14 @@ uint8_t enc28j60ReadOp(uint8_t op, uint8_t address)
   ENC28J60_CONTROL_CS = 0;
 
 	// issue read command
-	SPDR = op | (address & ADDR_MASK);
-	while(!(SPSR & (1<<SPIF)));
-	// read data
-	SPDR = 0x00;
-	while(!(SPSR & (1<<SPIF)));
+  spi_byte(op | (address & ADDR_MASK));
+  data = spi_byte(0x00);
 	// do dummy read if needed
 	if(address & 0x80)
 	{
-		SPDR = 0x00;
-		while(!(inb(SPSR) & (1<<SPIF)));
+    data = spi_byte(0x00);
 	}
-	data = SPDR;
-	
+
 	// release CS
   ENC28J60_CONTROL_CS = 1;
 
@@ -104,11 +115,8 @@ void enc28j60WriteOp(uint8_t op, uint8_t address, uint8_t data)
   ENC28J60_CONTROL_CS = 0;
 
 	// issue write command
-	SPDR = op | (address & ADDR_MASK);
-	while(!(SPSR & (1<<SPIF)));
-	// write data
-	SPDR = data;
-	while(!(SPSR & (1<<SPIF)));
+  spi_byte(op | (address & ADDR_MASK));
+  spi_byte(data);
 
 	// release CS
   ENC28J60_CONTROL_CS = 1;
@@ -120,14 +128,11 @@ void enc28j60ReadBuffer(uint16_t len, uint8_t* data)
   ENC28J60_CONTROL_CS = 0;
 	
 	// issue read command
-	SPDR = ENC28J60_READ_BUF_MEM;
-	while(!(SPSR & (1<<SPIF)));
+  spi_byte(ENC28J60_READ_BUF_MEM);
 	while(len--)
 	{
 		// read data
-		SPDR = 0x00;
-		while(!(SPSR & (1<<SPIF)));
-		*data++ = SPDR;
+		*data++ = spi_byte(0x00);
 	}	
 	// release CS
   ENC28J60_CONTROL_CS = 1;
@@ -139,14 +144,12 @@ void enc28j60WriteBuffer(uint16_t len, uint8_t* data)
   ENC28J60_CONTROL_CS = 0;
 	
 	// issue write command
-	SPDR = ENC28J60_WRITE_BUF_MEM;
-	while(!(SPSR & (1<<SPIF)));
+  spi_byte(ENC28J60_WRITE_BUF_MEM);
 	while(len--)
 	{
 		// write data
-		SPDR = *data++;
-		while(!(SPSR & (1<<SPIF)));
-	}	
+    spi_byte(*data++);
+	}
 	// release CS
   ENC28J60_CONTROL_CS = 1;
 }
@@ -216,8 +219,9 @@ void enc28j60PhyWrite(uint8_t address, uint16_t data)
 void enc28j60Init(void)
 {
 	// initialize I/O
+  ENC28J60_SPI_SCK = 0;    // set SCK hi
   ENC28J60_CONTROL_CS = 1; // set CS hi
-  ENC28J60_SPI_SCK = 1;    // set SCK hi
+  delay_us(50);
 
 	// perform system reset
 	enc28j60WriteOp(ENC28J60_SOFT_RESET, 0, ENC28J60_SOFT_RESET);
@@ -258,7 +262,7 @@ void enc28j60Init(void)
 	// set inter-frame gap (back-to-back)
 	enc28j60Write(MABBIPG, 0x12);
 	// Set the maximum packet size which the controller will accept
-	enc28j60Write(MAMXFLL, MAX_FRAMELEN&0xFF);	
+	enc28j60Write(MAMXFLL, MAX_FRAMELEN&0xFF);
 	enc28j60Write(MAMXFLH, MAX_FRAMELEN>>8);
 
 	// do bank 3 stuff
@@ -287,7 +291,7 @@ void enc28j60Init(void)
 
 	// Disable receive logic and abort any packets currently being transmitted
 	enc28j60WriteOp(ENC28J60_BIT_FIELD_CLR, ECON1, ECON1_TXRTS|ECON1_RXEN);
-	
+
 	{
 		uint16_t temp;
 		// Set the PHY to the proper duplex mode
@@ -300,12 +304,12 @@ void enc28j60Init(void)
 		enc28j60Write(MACON3, temp);
 	}
 
-	// Set the back-to-back inter-packet gap time to IEEE specified 
+	// Set the back-to-back inter-packet gap time to IEEE specified
 	// requirements.  The meaning of the MABBIPG value changes with the duplex
 	// state, so it must be updated in this function.
 	// In full duplex, 0x15 represents 9.6us; 0x12 is 9.6us in half duplex
-	//enc28j60Write(MABBIPG, DuplexState ? 0x15 : 0x12);	
-	
+	//enc28j60Write(MABBIPG, DuplexState ? 0x15 : 0x12);
+
 	// Reenable receive logic
 	enc28j60WriteOp(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_RXEN);
 
@@ -389,87 +393,62 @@ void enc28j60RegDump(void)
 //	unsigned char macaddr[6];
 //	result = ax88796Read(TR);
 	
-//	rprintf("Media State: ");
+//	PUTS("Media State: ");
 //	if(!(result & AUTOD))
-//		rprintf("Autonegotiation\r\n");
+//		PUTS("Autonegotiation\r\n");
 //	else if(result & RST_B)
-//		rprintf("PHY in Reset   \r\n");
+//		PUTS("PHY in Reset   \r\n");
 //	else if(!(result & RST_10B))
-//		rprintf("10BASE-T       \r\n");
+//		PUTS("10BASE-T       \r\n");
 //	else if(!(result & RST_TXB))
-//		rprintf("100BASE-T      \r\n");
-				
-	rprintf("RevID: 0x%x\r\n", enc28j60Read(EREVID));
+//		PUTS("100BASE-T      \r\n");
+  PRINTF("RevID: 0x%x\r\n", enc28j60Read(EREVID));
 
-	rprintfProgStrM("Cntrl: ECON1 ECON2 ESTAT  EIR  EIE\r\n");
-	rprintfProgStrM("         ");
-	rprintfuint8_t(enc28j60Read(ECON1));
-	rprintfProgStrM("    ");
-	rprintfuint8_t(enc28j60Read(ECON2));
-	rprintfProgStrM("    ");
-	rprintfuint8_t(enc28j60Read(ESTAT));
-	rprintfProgStrM("    ");
-	rprintfuint8_t(enc28j60Read(EIR));
-	rprintfProgStrM("   ");
-	rprintfuint8_t(enc28j60Read(EIE));
-	rprintfCRLF();
+	PUTS("Cntrl: ECON1 ECON2 ESTAT  EIR  EIE\r\n");
+	PRINTF("         %02X", enc28j60Read(ECON1));
+	PRINTF("    %02X", enc28j60Read(ECON2));
+	PRINTF("    %02X", enc28j60Read(ESTAT));
+	PRINTF("    %02X", enc28j60Read(EIR));
+	PRINTF("   %02X", enc28j60Read(EIE));
+  PUTS("\r\n");
 
-	rprintfProgStrM("MAC  : MACON1  MACON2  MACON3  MACON4  MAC-Address\r\n");
-	rprintfProgStrM("        0x");
-	rprintfuint8_t(enc28j60Read(MACON1));
-	rprintfProgStrM("    0x");
-	rprintfuint8_t(enc28j60Read(MACON2));
-	rprintfProgStrM("    0x");
-	rprintfuint8_t(enc28j60Read(MACON3));
-	rprintfProgStrM("    0x");
-	rprintfuint8_t(enc28j60Read(MACON4));
-	rprintfProgStrM("   ");
-	rprintfuint8_t(enc28j60Read(MAADR5));
-	rprintfuint8_t(enc28j60Read(MAADR4));
-	rprintfuint8_t(enc28j60Read(MAADR3));
-	rprintfuint8_t(enc28j60Read(MAADR2));
-	rprintfuint8_t(enc28j60Read(MAADR1));
-	rprintfuint8_t(enc28j60Read(MAADR0));
-	rprintfCRLF();
+  PUTS("MAC  : MACON1  MACON2  MACON3  MACON4  MAC-Address\r\n");
+	PRINTF("        0x%02X", enc28j60Read(MACON1));
+	PRINTF("    0x%02X", enc28j60Read(MACON2));
+	PRINTF("    0x%02X", enc28j60Read(MACON3));
+	PRINTF("    0x%02X", enc28j60Read(MACON4));
+	PRINTF("   %02X", enc28j60Read(MAADR5));
+	PRINTF("%02X", enc28j60Read(MAADR4));
+	PRINTF("%02X", enc28j60Read(MAADR3));
+	PRINTF("%02X", enc28j60Read(MAADR2));
+	PRINTF("%02X", enc28j60Read(MAADR1));
+	PRINTF("%02X", enc28j60Read(MAADR0));
+  PUTS("\r\n");
 
-	rprintfProgStrM("Rx   : ERXST  ERXND  ERXWRPT ERXRDPT ERXFCON EPKTCNT MAMXFL\r\n");
-	rprintfProgStrM("       0x");
-	rprintfuint8_t(enc28j60Read(ERXSTH));
-	rprintfuint8_t(enc28j60Read(ERXSTL));
-	rprintfProgStrM(" 0x");
-	rprintfuint8_t(enc28j60Read(ERXNDH));
-	rprintfuint8_t(enc28j60Read(ERXNDL));
-	rprintfProgStrM("  0x");
-	rprintfuint8_t(enc28j60Read(ERXWRPTH));
-	rprintfuint8_t(enc28j60Read(ERXWRPTL));
-	rprintfProgStrM("  0x");
-	rprintfuint8_t(enc28j60Read(ERXRDPTH));
-	rprintfuint8_t(enc28j60Read(ERXRDPTL));
-	rprintfProgStrM("   0x");
-	rprintfuint8_t(enc28j60Read(ERXFCON));
-	rprintfProgStrM("    0x");
-	rprintfuint8_t(enc28j60Read(EPKTCNT));
-	rprintfProgStrM("  0x");
-	rprintfuint8_t(enc28j60Read(MAMXFLH));
-	rprintfuint8_t(enc28j60Read(MAMXFLL));
-	rprintfCRLF();
+  PUTS("Rx   : ERXST  ERXND  ERXWRPT ERXRDPT ERXFCON EPKTCNT MAMXFL\r\n");
+	PRINTF("       0x%02X", enc28j60Read(ERXSTH));
+	PRINTF("%02X", enc28j60Read(ERXSTL));
+	PRINTF(" 0x%02X", enc28j60Read(ERXNDH));
+	PRINTF("%02X", enc28j60Read(ERXNDL));
+	PRINTF(" 0x%02X", enc28j60Read(ERXWRPTH));
+	PRINTF("%02X", enc28j60Read(ERXWRPTL));
+	PRINTF("  0x%02X", enc28j60Read(ERXRDPTH));
+	PRINTF("%02X", enc28j60Read(ERXRDPTL));
+	PRINTF("   0x%02X", enc28j60Read(ERXFCON));
+	PRINTF("    0x%02X", enc28j60Read(EPKTCNT));
+	PRINTF("  0x%02X", enc28j60Read(MAMXFLH));
+	PRINTF("%02X", enc28j60Read(MAMXFLL));
+  PUTS("\r\n");
 
-	rprintfProgStrM("Tx   : ETXST  ETXND  MACLCON1 MACLCON2 MAPHSUP\r\n");
-	rprintfProgStrM("       0x");
-	rprintfuint8_t(enc28j60Read(ETXSTH));
-	rprintfuint8_t(enc28j60Read(ETXSTL));
-	rprintfProgStrM(" 0x");
-	rprintfuint8_t(enc28j60Read(ETXNDH));
-	rprintfuint8_t(enc28j60Read(ETXNDL));
-	rprintfProgStrM("   0x");
-	rprintfuint8_t(enc28j60Read(MACLCON1));
-	rprintfProgStrM("     0x");
-	rprintfuint8_t(enc28j60Read(MACLCON2));
-	rprintfProgStrM("     0x");
-	rprintfuint8_t(enc28j60Read(MAPHSUP));
-	rprintfCRLF();
-
-	delay_us(25000); // wait 25ms for rprintf to complete
+  PUTS("Tx   : ETXST  ETXND  MACLCON1 MACLCON2 MAPHSUP\r\n");
+	PRINTF("       0x%02X", enc28j60Read(ETXSTH));
+	PRINTF("%02X", enc28j60Read(ETXSTL));
+	PRINTF(" 0x%02X", enc28j60Read(ETXNDH));
+	PRINTF("%02X", enc28j60Read(ETXNDL));
+	PRINTF("   0x%02X", enc28j60Read(MACLCON1));
+	PRINTF("     0x%02X", enc28j60Read(MACLCON2));
+	PRINTF("     0x%02X", enc28j60Read(MAPHSUP));
+  PUTS("\r\n");
 }
 
 

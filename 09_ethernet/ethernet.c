@@ -17,7 +17,9 @@
 #include <mcs51/8052.h>
 #include <mcs51/compiler.h> // NOP
 #include <stdint.h>
+#define _XPRINTF_ // Enable xprintf
 #include "xprintf.h"
+#include "enc28j60.h"
 
 void delay(uint16_t us) {
   while(us) {
@@ -25,6 +27,7 @@ void delay(uint16_t us) {
   }
 }
 
+// Use UART for output at 9600 baud, 12MHz crystal, see tool: https://reidemeister.com/tools
 void uart_init(void) {
   PCON &= 0x7F;	/* SMOD - Baud rate not doubled */
   SCON = 0x50;	/* 8 bits and variable baudrate */
@@ -32,21 +35,27 @@ void uart_init(void) {
   T2CON |= 0x30;	/* Set Timer 2 as UART TCLK and RCLK */
   RCAP2L = 0xd9;	/* Initial timer low value */
   RCAP2H = 0xff;	/* Initial timer high value */
-//  RCAP2H = 0;	/* Disable Timer 2 interrupt */
+  ET2 = 0;	/* Disable Timer 2 interrupt */
   TR2 = 1;	/* Timer2 start run */
 }
 
 void main(void) {
   uart_init();
-  for(;;) {
+  PUTS("Hello Ethernet World!\n"); // Normal printf would be too big for 8051
+  enc28j60Init();
+  PUTS("After Init\n");
 
-    PRINTF("%s\n", "Hello World!");
+  for(;;) {
+    enc28j60RegDump();
     delay(0xFFFF);
   }
 }
 
-int putchar (int ch) {
-  if(ch == '\n') putchar('\r');
+/**
+ * Needed for xprintf to output characters via UART
+ * @param ch Character to output
+ */
+int putchar(int ch) {
   for(SBUF = ch; !TI; );
   TI = 0;
   return ch;
