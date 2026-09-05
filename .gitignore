@@ -17,3 +17,6 @@ venv
 *.rst
 *.sym
 *.rel
+
+# Third-party reference material for docs/blog-topics.md - not redistributable
+docs/refs/
