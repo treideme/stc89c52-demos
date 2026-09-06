@@ -161,13 +161,13 @@ void enc28j60WriteBuffer(uint16_t len, uint8_t* data)
 void enc28j60SetBank(uint8_t address)
 {
 	// set the bank (if needed)
-	if((address & BANK_MASK) != Enc28j60Bank)
-	{
+	//if((address & BANK_MASK) != Enc28j60Bank)
+	//{
 		// set the bank
 		enc28j60WriteOp(ENC28J60_BIT_FIELD_CLR, ECON1, (ECON1_BSEL1|ECON1_BSEL0));
 		enc28j60WriteOp(ENC28J60_BIT_FIELD_SET, ECON1, (address & BANK_MASK)>>5);
 		Enc28j60Bank = (address & BANK_MASK);
-	}
+	//}
 }
 
 uint8_t enc28j60ReadReg(uint8_t address)
