@@ -1,4 +1,4 @@
-/* Lean ENC28J60 driver for the network-stack experiment (10_net_stack).
+/* Lean ENC28J60 driver for the network stack (net.c).
  *
  * Derived from 09_ethernet/enc28j60.c (Thomas Reidemeister): spi_byte() and
  * the init sequence are copied verbatim so the SPI bus behaves exactly like

@@ -1,4 +1,4 @@
-/* Minimal network stack for STC89C5x + ENC28J60 (10_net_stack).
+/* Minimal network stack for STC89C5x + ENC28J60.
  *
  * Nothing larger than an Ethernet+IP+TCP header is ever held in RAM:
  * headers are read into `pkt` (and `th` for TCP), rewritten in place into

@@ -2,29 +2,36 @@
 
 Please see [my blog](https://reidemeister.com/blog/2025.11.29) for details.
 
-Two directories come out of that post. `09_ethernet` is the bring-up demo: it
-resets the controller, reads its revision, writes and reads back the MAC, and
-reports over the serial console. `../10_net_stack` is the network stack that
-sits on the same driver and answers a laptop.
+This directory answers two questions from that post, and builds a separate
+image for each.
 
-They are separate because they answer separate questions. The first is *does
-the bus work at all*, which is where this project spent most of its time. The
-second is *how much of TCP/IP fits in 8 KB*, which turned out to be more than
-expected.
+*Does the bus work at all* is the bring-up demo: it resets the controller,
+reads its revision, writes and reads back the MAC, and reports over the serial
+console. That is where this project spent most of its time, and the answer
+turned out to be about which pins the bus is on.
+
+*How much of TCP/IP fits in 8 KB* is the network stack, which sits on the same
+hardware and answers a laptop. More than expected.
 
 ```
-09_ethernet/
+the bring-up demo
+  ethernet.c        the demo itself
   enc28j60.c/.h     the driver: banked registers, buffer, PHY
   enc28j60_cfg.h    SPI pins and MAC address, overridable with -D
-  ethernet.c        the bring-up demo
   xprintf.c/.h      third-party tiny printf (Eugene Chaban, GPL-2.0+)
-../10_net_stack/
-  enc.c/.h          a leaner driver, with the link defences
-  net.c/.h          ARP, IPv4, ICMP, UDP, DHCP, DNS, TCP
-  netcfg.h          rung selection, MTU, MAC, ports
+
+the network stack
   main.c            net_init() then net_poll() forever
+  net.c/.h          ARP, IPv4, ICMP, UDP, DHCP, DNS, TCP
+  enc.c/.h          a leaner driver, with the link defences
+  netcfg.h          rung selection, MTU, MAC, ports, ENC_LINK_DEFENCES
   hosttest/         a host-side ping and UDP echo checker
 ```
+
+Two drivers in one directory is deliberate rather than an oversight.
+`enc28j60.c` is the full AVRlib-descended driver the demo uses; `enc.c` is a
+lean one written for the stack, and it is the one carrying the link defences.
+Neither is a drop-in for the other.
 
 ## Building
 
@@ -190,7 +197,7 @@ at the top of this section.
 UDP payloads.
 
 ```shell
-cd 10_net_stack/hosttest
+cd 09_ethernet/hosttest
 uv run hosttest.py                      # exits 0 only if everything passed
 uv run hosttest.py --ip 192.168.7.2 --count 20
 uv run hosttest.py --no-ping            # UDP only

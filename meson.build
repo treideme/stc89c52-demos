@@ -74,7 +74,7 @@ foreach p : progs
 endforeach
 
 # ---------------------------------------------------------------------------
-# 10_net_stack -- the IP stack, built one image per rung per part.
+# The IP stack (net.c/enc.c in 09_ethernet), one image per rung per part.
 #
 # This does not go through the generator above, for two reasons. SDCC refuses
 # more than one source per invocation ("error 120"), so compiling and linking
@@ -108,7 +108,7 @@ foreach t : net_targets
             net_objs = []
             foreach src : ['main', 'net', 'enc']
                 net_objs += custom_target('@0@_@1@.rel'.format(tag, src),
-                    input : '10_net_stack/@0@.c'.format(src),
+                    input : '09_ethernet/@0@.c'.format(src),
                     output : '@0@_@1@.rel'.format(tag, src),
                     command : [cc, rung_args, '-c', '@INPUT@', '-o', '@OUTPUT@'],
                 )

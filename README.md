@@ -287,7 +287,7 @@ marginal link.
 
 Two images come out of this one. `09_ethernet` is the bring-up demo: it resets
 an ENC28J60, reads back its revision and MAC over bit-banged SPI, and reports on
-the serial console. `10_net_stack` is an IP stack on the same hardware, built one
+the serial console. The same directory holds an IP stack on that hardware, built one
 image per protocol rung so the cost of each is visible -- ARP through DHCP, DNS
 and a one-connection TCP echo.
 

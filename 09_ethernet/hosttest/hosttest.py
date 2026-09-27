@@ -1,6 +1,6 @@
 """Exercise the board's network stack over a real cable.
 
-Run against a board flashed with a 10_net_stack image:
+Run against a board flashed with a net_*_rung*.hex image:
 
     uv run hosttest.py                 # ping + UDP echo, default 169.254.194.20
     uv run hosttest.py --ip 192.168.7.2 --count 20
