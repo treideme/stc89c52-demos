@@ -112,8 +112,17 @@ void main(void)
   for (;;) {
     net_poll();
 #if NET_CONSOLE
-    /* Roughly once a second at this poll rate; exact timing is not the point. */
-    if (++ticks == 0)
+    /* Roughly once a second. The mask is measured, not guessed: an idle poll
+       still costs several SPI register reads, about 7 ms on the bench, so 128
+       polls is a second and 1024 would be 7.5. A bare `== 0` wraps a uint16
+       only every 65,536 polls - the line then never appears at all, measured
+       as 100 s under load with only the banner printed.
+
+       The cadence is not free: a line is ~70 characters, and putchar() spins
+       on TI, so at 9600 baud it blocks the poll loop for ~70 ms. Raise the
+       mask if a run cares more about not missing frames than about watching
+       the counters. */
+    if ((++ticks & 0x007F) == 0)
       report_link();
 #endif
   }
