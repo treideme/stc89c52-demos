@@ -186,6 +186,41 @@ void enc28j60WriteReg(uint8_t address, uint8_t data)
 	enc28j60WriteOp(ENC28J60_WRITE_CTRL_REG, address, data);
 }
 
+/* Nonzero when the part is a die that errata #1 applies to. */
+static uint8_t Enc28j60MacVerify;
+
+/* Errata DS80349C #1, B1 and B4 ONLY: below an 8 MHz SPI clock, reads and
+   writes of the MAC registers may be unreliable. No 8051 gets near 8 MHz --
+   bit-banging measures about 35 kHz here -- so on affected silicon this is
+   not an edge case, it is every access.
+
+   Neither published workaround is available on this board: 8 MHz is out of
+   reach, and clocking the host off the ENC28J60's CLKOUT means taking the
+   crystal off the dev kit.
+
+   A third falls out of what the erratum actually restricts. Access is
+   UNRELIABLE, not impossible, and it covers the MAC registers only -- not the
+   ETH registers and not the packet buffer, which is where the throughput is.
+   MAC registers are written about a dozen times, all during init. So write,
+   read back, and retry: an unreliable access becomes a bounded startup cost,
+   with nothing to pay on B5/B7. */
+static void enc28j60WriteMacReg(uint8_t address, uint8_t data)
+{
+	uint8_t attempt;
+
+	if (!Enc28j60MacVerify) {
+		enc28j60WriteReg(address, data);
+		return;
+	}
+	/* The read-back is itself a MAC access and can be corrupted too, so a
+	   mismatch does not prove the write failed. Retrying covers both. */
+	for (attempt = 0; attempt < 8; attempt++) {
+		enc28j60WriteReg(address, data);
+		if (enc28j60ReadReg(address) == data)
+			return;
+	}
+}
+
 void enc28j60WriteRegPair(uint8_t address, uint16_t data) {
 	/* set the bank */
 	enc28j60SetBank(address);
@@ -266,28 +301,44 @@ void enc28j60Init(void)
     enc28j60WriteRegPair(EPMM0, 0x303f);
     enc28j60WriteRegPair(EPMCSL, 0xf7f9);
 
-	/* do bank 2 stuff
-	   enable MAC receive
-	   and bring MAC out of reset (writes 0x00 to MACON2) */
-    enc28j60WriteRegPair(MACON1, MACON1_MARXEN|MACON1_TXPAUS|MACON1_RXPAUS);
-    /* enable automatic padding to 60bytes and CRC operations */
-    enc28j60WriteOp(ENC28J60_BIT_FIELD_SET, MACON3, MACON3_PADCFG0|MACON3_TXCRCEN|MACON3_FRMLNEN);
-    /* set inter-frame gap (non-back-to-back) */
-    enc28j60WriteRegPair(MAIPGL, 0x0C12);
-    /* set inter-frame gap (back-to-back) */
-    enc28j60WriteReg(MABBIPG, 0x12);
-    /* Set the maximum packet size which the controller will accept
-       Do not send packets longer than MAX_FRAMELEN: */
-    enc28j60WriteRegPair(MAMXFLL, MAX_FRAMELEN);
-    /* do bank 3 stuff
-       write MAC address
-       NOTE: MAC address in ENC28J60 is byte-backward */
-    enc28j60WriteReg(MAADR5, ENC28J60_MAC0);
-    enc28j60WriteReg(MAADR4, ENC28J60_MAC1);
-    enc28j60WriteReg(MAADR3, ENC28J60_MAC2);
-    enc28j60WriteReg(MAADR2, ENC28J60_MAC3);
-    enc28j60WriteReg(MAADR1, ENC28J60_MAC4);
-    enc28j60WriteReg(MAADR0, ENC28J60_MAC5);
+    /* Decide the MAC write strategy before writing any MAC register. EREVID
+       is an ETH register, so reading it stays reliable even on the silicon
+       errata #1 affects -- which is what makes this test possible at all.
+       DS80349C Table 1: 0x02 = B1, 0x04 = B4, 0x05 = B5, 0x06 = B7, and the
+       affected-revisions box carries marks under B1 and B4 only. On anything
+       newer the verified path is pure cost, so it is not paid. */
+    {
+        uint8_t rev = enc28j60ReadReg(EREVID);
+        Enc28j60MacVerify = (rev == 0x02) || (rev == 0x04);
+    }
+
+    /* bank 2: enable MAC receive, bring the MAC out of reset */
+    enc28j60WriteMacReg(MACON1, MACON1_MARXEN|MACON1_TXPAUS|MACON1_RXPAUS);
+    /* MACON2 = 0 brings the MAC out of reset. The old code got that as a side
+       effect of the pair write at MACON1; spelled out because each half now
+       has to be verified on its own. */
+    enc28j60WriteMacReg(MACON2, 0x00);
+    /* Automatic padding to 60 bytes and CRC. Datasheet 3.2.3/3.2.4: BFS and
+       BFC are valid on ETH registers ONLY. MACON3 is a MAC register -- this
+       file's own header tags it with SPRD_MASK -- so the bit-field form was
+       undefined. MACON3 reads 0x00 after reset, so a plain write sets the
+       same bits. */
+    enc28j60WriteMacReg(MACON3, MACON3_PADCFG0|MACON3_TXCRCEN|MACON3_FRMLNEN);
+    /* inter-frame gap, non-back-to-back */
+    enc28j60WriteMacReg(MAIPGL, 0x12);
+    enc28j60WriteMacReg(MAIPGH, 0x0C);
+    /* inter-frame gap, back-to-back */
+    enc28j60WriteMacReg(MABBIPG, 0x12);
+    /* largest frame the controller will accept */
+    enc28j60WriteMacReg(MAMXFLL, MAX_FRAMELEN & 0xFF);
+    enc28j60WriteMacReg(MAMXFLH, MAX_FRAMELEN >> 8);
+    /* bank 3: the MAC address, which the ENC28J60 holds byte-backward */
+    enc28j60WriteMacReg(MAADR5, ENC28J60_MAC0);
+    enc28j60WriteMacReg(MAADR4, ENC28J60_MAC1);
+    enc28j60WriteMacReg(MAADR3, ENC28J60_MAC2);
+    enc28j60WriteMacReg(MAADR2, ENC28J60_MAC3);
+    enc28j60WriteMacReg(MAADR1, ENC28J60_MAC4);
+    enc28j60WriteMacReg(MAADR0, ENC28J60_MAC5);
     /* no loopback of transmitted frames */
     enc28j60PhyWrite(PHCON2, PHCON2_HDLDIS);
     /* switch to bank 0 */
