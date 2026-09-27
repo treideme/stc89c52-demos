@@ -2,36 +2,36 @@
 
 Please see [my blog](https://reidemeister.com/blog/2025.11.29) for details.
 
-This directory answers two questions from that post, and builds a separate
-image for each.
+This directory answers two questions from that post, out of one set of
+sources: one driver, one `main()`, and a compile-time switch for each thing
+that costs flash.
 
-*Does the bus work at all* is the bring-up demo: it resets the controller,
-reads its revision, writes and reads back the MAC, and reports over the serial
-console. That is where this project spent most of its time, and the answer
-turned out to be about which pins the bus is on.
+*Does the bus work at all* is the bring-up build. It reports the controller's
+revision over the serial console and then keeps answering the network, so you
+can watch the link's health while it runs. That question is where this project
+spent most of its time, and the answer turned out to be about which pins the
+bus is on.
 
-*How much of TCP/IP fits in 8 KB* is the network stack, which sits on the same
-hardware and answers a laptop. More than expected.
+*How much of TCP/IP fits in 8 KB* is the same firmware with the console left
+out and one protocol rung selected. More than expected.
 
 ```
-the bring-up demo
-  ethernet.c        the demo itself
-  enc28j60.c/.h     the driver: banked registers, buffer, PHY
-  enc28j60_cfg.h    SPI pins and MAC address, overridable with -D
-  xprintf.c/.h      third-party tiny printf (Eugene Chaban, GPL-2.0+)
-
-the network stack
-  main.c            net_init() then net_poll() forever
-  net.c/.h          ARP, IPv4, ICMP, UDP, DHCP, DNS, TCP
-  enc.c/.h          a leaner driver, with the link defences
-  netcfg.h          rung selection, MTU, MAC, ports, ENC_LINK_DEFENCES
-  hosttest/         a host-side ping and UDP echo checker
+main.c        net_init(), then net_poll() forever, plus the optional console
+net.c/.h      ARP, IPv4, ICMP, UDP, DHCP, DNS, TCP
+enc.c/.h      the ENC28J60 driver: SPI, banked registers, buffer, PHY
+netcfg.h      every switch: NET_RUNG, NET_CONSOLE, ENC_LINK_DEFENCES, MTU,
+              MAC, addresses, ports
+xprintf.c/.h  third-party tiny printf (Eugene Chaban, GPL-2.0+), console only
+hosttest/     a host-side ping and UDP echo checker
 ```
 
-Two drivers in one directory is deliberate rather than an oversight.
-`enc28j60.c` is the full AVRlib-descended driver the demo uses; `enc.c` is a
-lean one written for the stack, and it is the one carrying the link defences.
-Neither is a drop-in for the other.
+There used to be a second, fuller driver here (`enc28j60.c`, descended from
+AVRlib) with its own `main()`. `enc.c` grew out of it -- `spi_byte()` and the
+init sequence came across verbatim -- and then gained the things the bench
+demanded: `ETXST` programmed, `ERXRDPT` written odd, a streaming API so a
+300-byte DHCP message never has to fit in 256 bytes of XRAM, and the link
+defences. Keeping both meant two drivers to fix every time the bench found
+something, so there is now one.
 
 ## Building
 
@@ -41,9 +41,15 @@ ninja -v -C ./build
 ninja -v -C ./build flash_09_ethernet
 ```
 
-The stack builds one image per rung per part, so
-`build/net_stc89c52rc_rung3.hex` is ARP + ICMP + UDP on the fitted chip.
-Flashing follows the same pattern: `flash_net_stc89c52rc_rung3`.
+`09_ethernet.hex` is the bring-up build: rung 3 (ARP, ICMP, UDP echo) with
+`NET_CONSOLE=1`, which is what the bench was actually driven with. Everything
+else is one image per rung per part, so `build/net_stc89c52rc_rung3.hex` is the
+same firmware without the console. Flashing follows the target name:
+`flash_net_stc89c52rc_rung3`.
+
+The console costs about 1.1 KB of flash -- 4,473 B against rung 3's 3,385 --
+which is why it is off in the rung images. Leaving it on would push the upper
+rungs out of the STC89C52RC.
 
 ## The pins are the whole story
 

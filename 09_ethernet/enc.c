@@ -36,7 +36,7 @@
 #define SRC  0xFF
 
 /* Registers: address | bank<<5 | 0x80 when the read needs a dummy byte
- * (MAC/MII), the same encoding as 09_ethernet/enc28j60.h.
+ * (MAC/MII), the AVRlib encoding this driver inherited.
  */
 #define ERDPTL   0x00
 #define ERDPTH   0x01
@@ -97,7 +97,7 @@ static uint8_t rxen_kicks;   /* times receive had to be switched back on */
 static uint16_t last_bad_next;
 static uint16_t last_bad_count;
 
-/* ---- verbatim from 09_ethernet/enc28j60.c -------------------------------- */
+/* ---- verbatim from the AVRlib-descended driver --------------------------- */
 static uint8_t spi_byte(uint8_t d) {
   uint8_t res = 0;
   for(uint8_t i = 0; i < 8; i++) {

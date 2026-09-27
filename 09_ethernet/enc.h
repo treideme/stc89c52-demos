@@ -1,10 +1,10 @@
 /* Lean ENC28J60 driver for the network stack (net.c).
  *
- * Derived from 09_ethernet/enc28j60.c (Thomas Reidemeister): spi_byte() and
- * the init sequence are copied verbatim so the SPI bus behaves exactly like
- * the bench build. Differences, all deliberate:
- *   - no register dump / xprintf (8 KB of flash is the budget);
- *   - ETXST is programmed (09_ethernet leaves it at 0, so the chip would
+ * Descended from the AVRlib ENC28J60 driver by way of this project's earlier
+ * enc28j60.c: spi_byte() and the init sequence came across verbatim, so the
+ * SPI bus behaves exactly as it did on the bench. Differences, all deliberate:
+ *   - no register dump, so no xprintf unless NET_CONSOLE asks for one;
+ *   - ETXST is programmed (the older driver left it at 0, so the chip would
  *     transmit from the RX buffer instead of the frame just written);
  *   - ERXRDPT is written odd (silicon errata: an even value can corrupt the
  *     RX ring), and the TX logic is reset before each send (errata);

@@ -44,6 +44,15 @@
 #define NET_CHUNK 32
 #endif
 
+/* Serial bring-up console in main.c: the EREVID identity check and a periodic
+ * link-health line. Off by default because xprintf and its strings cost about
+ * 1.5 KB, a fifth of the STC89C52RC's flash, which would push the upper rungs
+ * out of the part. Turn it on for a new board or new wiring.
+ */
+#ifndef NET_CONSOLE
+#define NET_CONSOLE 0
+#endif
+
 /* Defences against a marginal SPI link, in enc.c. On this bench the link is
  * electrically poor: a read-only EREVID canary misreads 1-3 times per run
  * under traffic, and corrupted headers arrive carrying frame payload. Set to

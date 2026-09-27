@@ -53,7 +53,6 @@ progs = [
 
     ['08_irda', '08_irda.hex', ['08_irda/irda.c'], 'Infrared transmission Example'],
 
-    ['09_ethernet', '09_ethernet.hex', ['09_ethernet/ethernet.c', '09_ethernet/xprintf.c', '09_ethernet/enc28j60.c'], 'Ethernet Communication Example'],
 ]
 
 # Build automation
@@ -99,38 +98,56 @@ net_targets = [
     ['stc89c516rd', 62464, 256, 1024, 8],
 ]
 
+# [image name, flash target, part, flash, iram, xram, rung, console?]
+#
+# The bring-up image is the same firmware with the serial console compiled in
+# and rung 3 (ARP, ICMP, UDP echo) -- what the bench was actually driven with.
+# It keeps the flash_09_ethernet name it has always had.
+net_images = [['09_ethernet', '09_ethernet', 'stc89c52rc', 8192, 256, 256, 3, true]]
+
 foreach t : net_targets
     foreach r : [1, 2, 3, 4, 5, 6, 7, 8]
         if r <= t[4]
-            tag = '@0@_rung@1@'.format(t[0], r)
-            rung_args = net_cc_args + ['-DNET_RUNG=@0@'.format(r), '-DNET_XRAM_SIZE=@0@'.format(t[3])]
-
-            net_objs = []
-            foreach src : ['main', 'net', 'enc']
-                net_objs += custom_target('@0@_@1@.rel'.format(tag, src),
-                    input : '09_ethernet/@0@.c'.format(src),
-                    output : '@0@_@1@.rel'.format(tag, src),
-                    command : [cc, rung_args, '-c', '@INPUT@', '-o', '@OUTPUT@'],
-                )
-            endforeach
-
-            net_hex = 'net_@0@.hex'.format(tag)
-            net_exe = custom_target(net_hex,
-                input : net_objs,
-                output : net_hex,
-                install : true,
-                install_dir : 'firmware',
-                command : [cc, rung_args,
-                           '--code-size', '@0@'.format(t[1]),
-                           '--iram-size', '@0@'.format(t[2]),
-                           '--xram-size', '@0@'.format(t[3]),
-                           '-o', '@OUTPUT@', '@INPUT@'],
-            )
-
-            run_target('flash_net_@0@'.format(tag),
-                command : [stcgal] + stcgal_args + ['@0@'.format(net_exe.full_path())],
-                depends : net_exe,
-            )
+            net_images += [['net_@0@_rung@1@'.format(t[0], r),
+                            'net_@0@_rung@1@'.format(t[0], r),
+                            t[0], t[1], t[2], t[3], r, false]]
         endif
     endforeach
+endforeach
+
+foreach im : net_images
+    img_args = net_cc_args + ['-DNET_RUNG=@0@'.format(im[6]),
+                              '-DNET_XRAM_SIZE=@0@'.format(im[5])]
+    img_srcs = ['main', 'net', 'enc']
+    if im[7]
+        img_args += ['-DNET_CONSOLE=1']
+        img_srcs += 'xprintf'
+    endif
+
+    img_objs = []
+    foreach src : img_srcs
+        img_objs += custom_target('@0@_@1@.rel'.format(im[0], src),
+            input : '09_ethernet/@0@.c'.format(src),
+            output : '@0@_@1@.rel'.format(im[0], src),
+            command : [cc, img_args, '-c', '@INPUT@', '-o', '@OUTPUT@'],
+        )
+    endforeach
+
+    img_hex = '@0@.hex'.format(im[0])
+    img_exe = custom_target(img_hex,
+        input : img_objs,
+        output : img_hex,
+        install : true,
+        install_dir : 'firmware',
+        command : [cc, img_args,
+                   '--code-size', '@0@'.format(im[3]),
+                   '--iram-size', '@0@'.format(im[4]),
+                   '--xram-size', '@0@'.format(im[5]),
+                   '-o', '@OUTPUT@', '@INPUT@'],
+    )
+
+    run_target('flash_@0@'.format(im[1]),
+        command : [stcgal] + stcgal_args + ['@0@'.format(img_exe.full_path())],
+        depends : img_exe,
+    )
 endforeach

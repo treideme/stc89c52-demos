@@ -285,11 +285,12 @@ more details, and **[09_ethernet/README.md](09_ethernet/README.md)** for the
 wiring, the memory budget per protocol rung, and what the driver does about a
 marginal link.
 
-Two images come out of this one. `09_ethernet` is the bring-up demo: it resets
-an ENC28J60, reads back its revision and MAC over bit-banged SPI, and reports on
-the serial console. The same directory holds an IP stack on that hardware, built one
-image per protocol rung so the cost of each is visible -- ARP through DHCP, DNS
-and a one-connection TCP echo.
+One set of sources, built several ways. `09_ethernet.hex` is the bring-up
+build: it resets an ENC28J60 over bit-banged SPI, reports the revision on the
+serial console, and then answers the network while printing link health. The
+same firmware without the console is built one image per protocol rung, so the
+cost of each is visible -- ARP through DHCP, DNS and a one-connection TCP
+echo.
 
 Rungs 1-7 fit the fitted STC89C52RC in 7,902 of its 8,192 bytes. Rung 8 adds TCP
 and needs about 11 KB, so it is built only for the pin-compatible STC89C516RD+.
@@ -300,7 +301,7 @@ the 74HC245, the LED matrix and the LCD, which corrupts every register read. Use
 3.3 V supply; its pins are 5 V tolerant.
 
 ```shell
-# The bring-up demo
+# Bring-up: rung 3 with the serial console compiled in
 ninja -v -C ./build flash_09_ethernet
 
 # The stack: one image per rung, per part
