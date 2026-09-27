@@ -21,7 +21,7 @@
  * Clip a USB-serial adapter to P1.7 and ground. P1.7 is keypad row 1 and
  * nothing else on this board, so it is free as long as no key is held.
  *
- * ⚠️ P1.7 idles at 5 V. An FT232RL's RXD is 5 V tolerant; a 3.3 V-only
+ * P1.7 idles at 5 V. An FT232RL's RXD is 5 V tolerant; a 3.3 V-only
  * adapter needs a divider. Adapter RXD to P1.7, adapter GND to board GND,
  * and leave the adapter's TXD unconnected -- this is output only.
  *

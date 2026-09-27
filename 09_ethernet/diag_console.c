@@ -79,7 +79,7 @@ static void putdec16(uint16_t v)
  * gate_cycles / counts. At 9600 baud in 6T the gate is 9600 cycles and
  * 11.0592 MHz gives 32552 counts against 12 MHz's 30000 -- far apart.
  *
- * ⚠️ NOT exercised in simulation. emu8051's finest time unit is one
+ * NOT exercised in simulation. emu8051's finest time unit is one
  * machine cycle (~543 ns at 1.8432 MHz) and a 6.25 MHz clock has a 160 ns
  * period, so the model cannot represent the input at all. The arithmetic
  * is checked; the code path is not. Treat a first reading on real
