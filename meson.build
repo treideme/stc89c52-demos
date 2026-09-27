@@ -22,25 +22,12 @@ compiler = generator(cc,
     arguments : cc_args + cc_incs + ['-c', '@INPUT@'] + ['-o', '@OUTPUT@'],
 )
 
-# The same compiler, with the ENC28J60 driver's SPI transport switched from
-# bit-banging to the UART's synchronous Mode 0 (see 09_ethernet/enc28j60_cfg.h).
-# A second generator rather than a per-target argument because meson declares a
-# generator once and reuses it, and there are exactly two transports -- a
-# general mechanism would be more code than the case needs.
-mode0_args = cc_args + ['-DENC28J60_SPI_MODE0=1']
-compiler_mode0 = generator(cc,
-    output : '@BASENAME@.rel',
-    arguments : mode0_args + cc_incs + ['-c', '@INPUT@'] + ['-o', '@OUTPUT@'],
-)
-
 # Laundry list of example
 #
-# [flash_target_name, output_name, sources, description, mode0?]
+# [flash_target_name, output_name, sources, description]
 #
 # The first field names this entry's flash_* run_target and so has to be unique
-# across the list -- it is usually the directory, but two images can come out of
-# one directory. The fifth field is optional and defaults to false; true builds
-# that image with -DENC28J60_SPI_MODE0=1.
+# across the list.
 progs = [
     ['00_hello', '00_hello.hex', ['00_hello/hello.c'], 'Hello World Example'],
 
@@ -67,33 +54,83 @@ progs = [
     ['08_irda', '08_irda.hex', ['08_irda/irda.c'], 'Infrared transmission Example'],
 
     ['09_ethernet', '09_ethernet.hex', ['09_ethernet/ethernet.c', '09_ethernet/xprintf.c', '09_ethernet/enc28j60.c'], 'Ethernet Communication Example'],
-
-    # The same bring-up, with somewhere to report to. The SPI moves onto the
-    # UART's Mode 0 shift register -- one machine cycle per bit instead of 26 --
-    # which costs P3.0/P3.1 and with them the CH340 console, so the console
-    # becomes a bit-banged transmitter on P1.7. It needs an inverter and a
-    # tri-state gate in the adapter harness, which is why this is a separate
-    # image and not a replacement; see 09_ethernet/enc28j60_cfg.h.
-    ['09_ethernet_console', '09_ethernet_console.hex',
-        ['09_ethernet/enc28j60.c', '09_ethernet/xprintf.c',
-         '09_ethernet/softuart.c', '09_ethernet/diag_console.c'],
-        'ENC28J60 over UART Mode 0 with a bit-banged debug console', true],
 ]
 
 # Build automation
 foreach p : progs
-    use_mode0 = p.length() > 4 and p[4]
-    obj = use_mode0 ? compiler_mode0.process(p[2]) : compiler.process(p[2])
+    obj = compiler.process(p[2])
     exe = custom_target(p[1],
         input : obj,
         output : p[1],
         install : true,
         install_dir: 'firmware',
-        command : [cc, use_mode0 ? mode0_args : cc_args, '-o', '@OUTPUT@', '@INPUT@'],
+        command : [cc, cc_args, '-o', '@OUTPUT@', '@INPUT@'],
     )
     fls = run_target('flash_@0@'.format(p[0]),
         command : [stcgal] + stcgal_args + ['@0@'.format(exe.full_path())],
         depends : exe,
     )
 
+endforeach
+
+# ---------------------------------------------------------------------------
+# 10_net_stack -- the IP stack, built one image per rung per part.
+#
+# This does not go through the generator above, for two reasons. SDCC refuses
+# more than one source per invocation ("error 120"), so compiling and linking
+# are separate steps either way; and a generator bakes its arguments in once,
+# while every rung needs a different -DNET_RUNG. A generator per rung would
+# also collide, because they would all emit main.rel/net.rel/enc.rel into the
+# same place. Explicit custom_targets with unique object names avoid both.
+#
+# Flags are the staging project's, not cc_args, so the sizes reproduce the
+# ones quoted in the blog post rather than drifting with this project's
+# defaults.
+net_cc_args = ['-mmcs51', '--model-small', '--Werror', '--opt-code-size', '--out-fmt-ihx']
+
+# [part, flash, iram, xram, highest rung that fits]
+#
+# The last field is a measurement, not a preference. Rung 8 (TCP) needs about
+# 11 KB against the RC's 8 KB, so asking for it would fail the link and break
+# the whole build. The RD+ is the pin-compatible part with 61 KB that does fit
+# it. Raise the number when a rung gets smaller, not to make ninja try harder.
+net_targets = [
+    ['stc89c52rc', 8192, 256, 256, 7],
+    ['stc89c516rd', 62464, 256, 1024, 8],
+]
+
+foreach t : net_targets
+    foreach r : [1, 2, 3, 4, 5, 6, 7, 8]
+        if r <= t[4]
+            tag = '@0@_rung@1@'.format(t[0], r)
+            rung_args = net_cc_args + ['-DNET_RUNG=@0@'.format(r), '-DNET_XRAM_SIZE=@0@'.format(t[3])]
+
+            net_objs = []
+            foreach src : ['main', 'net', 'enc']
+                net_objs += custom_target('@0@_@1@.rel'.format(tag, src),
+                    input : '10_net_stack/@0@.c'.format(src),
+                    output : '@0@_@1@.rel'.format(tag, src),
+                    command : [cc, rung_args, '-c', '@INPUT@', '-o', '@OUTPUT@'],
+                )
+            endforeach
+
+            net_hex = 'net_@0@.hex'.format(tag)
+            net_exe = custom_target(net_hex,
+                input : net_objs,
+                output : net_hex,
+                install : true,
+                install_dir : 'firmware',
+                command : [cc, rung_args,
+                           '--code-size', '@0@'.format(t[1]),
+                           '--iram-size', '@0@'.format(t[2]),
+                           '--xram-size', '@0@'.format(t[3]),
+                           '-o', '@OUTPUT@', '@INPUT@'],
+            )
+
+            run_target('flash_net_@0@'.format(tag),
+                command : [stcgal] + stcgal_args + ['@0@'.format(net_exe.full_path())],
+                depends : net_exe,
+            )
+        endif
+    endforeach
 endforeach

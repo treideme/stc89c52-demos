@@ -15,9 +15,9 @@
  * @author Thomas Reidemeister
  */
 #include <mcs51/8052.h>
-#include <mcs51/compiler.h> // NOP
+#include <mcs51/compiler.h> /* NOP */
 #include <stdint.h>
-#define _XPRINTF_ // Enable xprintf
+#define _XPRINTF_ /* enable xprintf */
 #include "xprintf.h"
 #include "enc28j60.h"
 
@@ -27,7 +27,7 @@ void delay(uint16_t us) {
   }
 }
 
-// Use UART for output at 9600 baud, 12MHz crystal, see tool: https://reidemeister.com/tools
+/* UART output, 9600 baud, 12 MHz crystal. See https://reidemeister.com/tools */
 void uart_init(void) {
   PCON &= 0x7F;	/* SMOD - Baud rate not doubled */
   SCON = 0x50;	/* 8 bits and variable baudrate */
@@ -41,7 +41,7 @@ void uart_init(void) {
 
 void main(void) {
   uart_init();
-  PUTS("Hello Ethernet World!\n"); // Normal printf would be too big for 8051
+  PUTS("Hello Ethernet World!\n"); /* printf would be too big for an 8051 */
   enc28j60Init();
   PUTS("After Init\n");
 

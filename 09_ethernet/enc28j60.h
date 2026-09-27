@@ -18,28 +18,28 @@
 #define ENC28J60_H
 
 #include <mcs51/8051.h>
-#include <mcs51/compiler.h> // NOP
-#include <stdbool.h> // bool (source used --std-c23 in stc89c52-demos; not enabled here)
+#include <mcs51/compiler.h> /* NOP */
+#include <stdbool.h> /* bool (source used --std-c23 in stc89c52-demos; not enabled here) */
 #include <stdint.h>
 
 #define nop()	NOP()
 
-// ENC28J60 Control Registers
-// Control register definitions are a combination of address,
-// bank number, and Ethernet/MAC/PHY indicator bits.
-// - Register address        (bits 0-4)
-// - Bank number        (bits 5-6)
-// - MAC/PHY indicator        (bit 7)
+/* ENC28J60 Control Registers
+   Control register definitions are a combination of address,
+   bank number, and Ethernet/MAC/PHY indicator bits.
+   - Register address        (bits 0-4)
+   - Bank number        (bits 5-6)
+   - MAC/PHY indicator        (bit 7) */
 #define ADDR_MASK        0x1F
 #define BANK_MASK        0x60
 #define SPRD_MASK        0x80
-// All-bank registers
+/* All-bank registers */
 #define EIE              0x1B
 #define EIR              0x1C
 #define ESTAT            0x1D
 #define ECON2            0x1E
 #define ECON1            0x1F
-// Bank 0 registers
+/* Bank 0 registers */
 #define ERDPTL           (0x00|0x00)
 #define ERDPTH           (0x01|0x00)
 #define EWRPTL           (0x02|0x00)
@@ -64,7 +64,7 @@
 #define EDMADSTH         (0x15|0x00)
 #define EDMACSL          (0x16|0x00)
 #define EDMACSH          (0x17|0x00)
-// Bank 1 registers
+/* Bank 1 registers */
 #define EHT0             (0x00|0x20)
 #define EHT1             (0x01|0x20)
 #define EHT2             (0x02|0x20)
@@ -89,7 +89,7 @@
 #define EWOLIR           (0x17|0x20)
 #define ERXFCON          (0x18|0x20)
 #define EPKTCNT          (0x19|0x20)
-// Bank 2 registers
+/* Bank 2 registers */
 #define MACON1           (0x00|0x40|0x80)
 #define MACON2           (0x01|0x40|0x80)
 #define MACON3           (0x02|0x40|0x80)
@@ -109,7 +109,7 @@
 #define MIWRH            (0x17|0x40|0x80)
 #define MIRDL            (0x18|0x40|0x80)
 #define MIRDH            (0x19|0x40|0x80)
-// Bank 3 registers
+/* Bank 3 registers */
 #define MAADR1           (0x00|0x60|0x80)
 #define MAADR0           (0x01|0x60|0x80)
 #define MAADR3           (0x02|0x60|0x80)
@@ -126,7 +126,7 @@
 #define EFLOCON          (0x17|0x60)
 #define EPAUSL           (0x18|0x60)
 #define EPAUSH           (0x19|0x60)
-// PHY registers
+/* PHY registers */
 #define PHCON1           0x00
 #define PHSTAT1          0x01
 #define PHHID1           0x02
@@ -137,7 +137,7 @@
 #define PHIR             0x13
 #define PHLCON           0x14
 
-// ENC28J60 ERXFCON Register Bit Definitions
+/* ENC28J60 ERXFCON Register Bit Definitions */
 #define ERXFCON_UCEN     0x80
 #define ERXFCON_ANDOR    0x40
 #define ERXFCON_CRCEN    0x20
@@ -146,7 +146,7 @@
 #define ERXFCON_HTEN     0x04
 #define ERXFCON_MCEN     0x02
 #define ERXFCON_BCEN     0x01
-// ENC28J60 EIE Register Bit Definitions
+/* ENC28J60 EIE Register Bit Definitions */
 #define EIE_INTIE        0x80
 #define EIE_PKTIE        0x40
 #define EIE_DMAIE        0x20
@@ -155,7 +155,7 @@
 #define EIE_WOLIE        0x04
 #define EIE_TXERIE       0x02
 #define EIE_RXERIE       0x01
-// ENC28J60 EIR Register Bit Definitions
+/* ENC28J60 EIR Register Bit Definitions */
 #define EIR_PKTIF        0x40
 #define EIR_DMAIF        0x20
 #define EIR_LINKIF       0x10
@@ -163,18 +163,18 @@
 #define EIR_WOLIF        0x04
 #define EIR_TXERIF       0x02
 #define EIR_RXERIF       0x01
-// ENC28J60 ESTAT Register Bit Definitions
+/* ENC28J60 ESTAT Register Bit Definitions */
 #define ESTAT_INT        0x80
 #define ESTAT_LATECOL    0x10
 #define ESTAT_RXBUSY     0x04
 #define ESTAT_TXABRT     0x02
 #define ESTAT_CLKRDY     0x01
-// ENC28J60 ECON2 Register Bit Definitions
+/* ENC28J60 ECON2 Register Bit Definitions */
 #define ECON2_AUTOINC    0x80
 #define ECON2_PKTDEC     0x40
 #define ECON2_PWRSV      0x20
 #define ECON2_VRPS       0x08
-// ENC28J60 ECON1 Register Bit Definitions
+/* ENC28J60 ECON1 Register Bit Definitions */
 #define ECON1_TXRST      0x80
 #define ECON1_RXRST      0x40
 #define ECON1_DMAST      0x20
@@ -183,20 +183,20 @@
 #define ECON1_RXEN       0x04
 #define ECON1_BSEL1      0x02
 #define ECON1_BSEL0      0x01
-// ENC28J60 MACON1 Register Bit Definitions
+/* ENC28J60 MACON1 Register Bit Definitions */
 #define MACON1_LOOPBK    0x10
 #define MACON1_TXPAUS    0x08
 #define MACON1_RXPAUS    0x04
 #define MACON1_PASSALL   0x02
 #define MACON1_MARXEN    0x01
-// ENC28J60 MACON2 Register Bit Definitions
+/* ENC28J60 MACON2 Register Bit Definitions */
 #define MACON2_MARST     0x80
 #define MACON2_RNDRST    0x40
 #define MACON2_MARXRST   0x08
 #define MACON2_RFUNRST   0x04
 #define MACON2_MATXRST   0x02
 #define MACON2_TFUNRST   0x01
-// ENC28J60 MACON3 Register Bit Definitions
+/* ENC28J60 MACON3 Register Bit Definitions */
 #define MACON3_PADCFG2   0x80
 #define MACON3_PADCFG1   0x40
 #define MACON3_PADCFG0   0x20
@@ -205,36 +205,36 @@
 #define MACON3_HFRMLEN   0x04
 #define MACON3_FRMLNEN   0x02
 #define MACON3_FULDPX    0x01
-// ENC28J60 MICMD Register Bit Definitions
+/* ENC28J60 MICMD Register Bit Definitions */
 #define MICMD_MIISCAN    0x02
 #define MICMD_MIIRD      0x01
-// ENC28J60 MISTAT Register Bit Definitions
+/* ENC28J60 MISTAT Register Bit Definitions */
 #define MISTAT_NVALID    0x04
 #define MISTAT_SCAN      0x02
 #define MISTAT_BUSY      0x01
-// ENC28J60 PHY PHCON1 Register Bit Definitions
+/* ENC28J60 PHY PHCON1 Register Bit Definitions */
 #define PHCON1_PRST      0x8000
 #define PHCON1_PLOOPBK   0x4000
 #define PHCON1_PPWRSV    0x0800
 #define PHCON1_PDPXMD    0x0100
-// ENC28J60 PHY PHSTAT1 Register Bit Definitions
+/* ENC28J60 PHY PHSTAT1 Register Bit Definitions */
 #define PHSTAT1_PFDPX    0x1000
 #define PHSTAT1_PHDPX    0x0800
 #define PHSTAT1_LLSTAT   0x0004
 #define PHSTAT1_JBSTAT   0x0002
-// ENC28J60 PHY PHCON2 Register Bit Definitions
+/* ENC28J60 PHY PHCON2 Register Bit Definitions */
 #define PHCON2_FRCLINK   0x4000
 #define PHCON2_TXDIS     0x2000
 #define PHCON2_JABBER    0x0400
 #define PHCON2_HDLDIS    0x0100
 
-// ENC28J60 Packet Control Byte Bit Definitions
+/* ENC28J60 Packet Control Byte Bit Definitions */
 #define PKTCTRL_PHUGEEN  0x08
 #define PKTCTRL_PPADEN   0x04
 #define PKTCTRL_PCRCEN   0x02
 #define PKTCTRL_POVERRIDE 0x01
 
-// SPI operation codes
+/* SPI operation codes */
 #define ENC28J60_READ_CTRL_REG       0x00
 #define ENC28J60_READ_BUF_MEM        0x3A
 #define ENC28J60_WRITE_CTRL_REG      0x40
@@ -244,80 +244,76 @@
 #define ENC28J60_SOFT_RESET          0xFF
 
 
-// The RXSTART_INIT should be zero. See Rev. B4 Silicon Errata
-// buffer boundaries applied to internal 8K ram
-// the entire available packet buffer space is allocated
-//
-// start with recbuf at 0/
+/* The RXSTART_INIT should be zero. See Rev. B4 Silicon Errata
+   buffer boundaries applied to internal 8K ram
+   the entire available packet buffer space is allocated
+   start with recbuf at 0/ */
 #define RXSTART_INIT     0x0
-// receive buffer end. make sure this is an odd value ( See Rev. B1,B4,B5,B7 Silicon Errata 'Memory (Ethernet Buffer)')
+/* receive buffer end. make sure this is an odd value ( See Rev. B1,B4,B5,B7 Silicon Errata 'Memory (Ethernet Buffer)') */
 #define RXSTOP_INIT      (0x1FFF-0x1800)
-// start TX buffer RXSTOP_INIT+1
+/* start TX buffer RXSTOP_INIT+1 */
 #define TXSTART_INIT     (RXSTOP_INIT+1)
-// stp TX buffer at end of mem
+/* stp TX buffer at end of mem */
 #define TXSTOP_INIT      0x1FFF
-//
-// max frame length which the conroller will accept:
-#define        MAX_FRAMELEN        1500        // (note: maximum ethernet frame length would be 1518)
-//#define MAX_FRAMELEN     600
+/* max frame length which the conroller will accept: */
+#define        MAX_FRAMELEN        1500 /* (note: maximum ethernet frame length would be 1518) */
+/* #define MAX_FRAMELEN     600 */
 
 
-// Ethernet constants
+/* Ethernet constants */
 #define ETHERNET_MIN_PACKET_LENGTH	0x3C
-//#define ETHERNET_HEADER_LENGTH		0x0E
+/* #define ETHERNET_HEADER_LENGTH		0x0E */
 
-//! do a ENC28J60 read operation
+/* do a ENC28J60 read operation */
 uint8_t enc28j60ReadOp(uint8_t op, uint8_t address);
-//! do a ENC28J60 write operation
+/* do a ENC28J60 write operation */
 void enc28j60WriteOp(uint8_t op, uint8_t address, uint8_t data);
-//! read the packet buffer memory
+/* read the packet buffer memory */
 void enc28j60ReadBuffer(uint16_t len, uint8_t* data);
-//! write the packet buffer memory
+/* write the packet buffer memory */
 void enc28j60WriteBuffer(uint16_t len, uint8_t* data);
-//! set the register bank for register at address
+/* set the register bank for register at address */
 void enc28j60SetBank(uint8_t address);
-//! read ax88796 register
+/* read ax88796 register */
 uint8_t enc28j60ReadReg(uint8_t address);
-//! write ax88796 register
+/* write ax88796 register */
 void enc28j60WriteReg(uint8_t address, uint8_t data);
-//! write ax88796 register
+/* write ax88796 register */
 void enc28j60WriteRegPair(uint8_t address, uint16_t data);
-//! read a PHY register
+/* read a PHY register */
 uint16_t enc28j60PhyRead(uint8_t address);
-//! write a PHY register
+/* write a PHY register */
 void enc28j60PhyWrite(uint8_t address, uint16_t data);
 
-//! initialize the ethernet interface for transmit/receive
+/* initialize the ethernet interface for transmit/receive */
 void enc28j60Init(void);
 
-//! Packet transmit function.
-/// Sends a packet on the network.  It is assumed that the packet is headed by a valid ethernet header.
-/// \param len		Length of packet in bytes.
-/// \param packet	Pointer to packet data.
+/* Packet transmit function.
+   Sends a packet on the network.  It is assumed that the packet is headed by a valid ethernet header.
+   \param len		Length of packet in bytes.
+   \param packet	Pointer to packet data. */
 void enc28j60PacketSend(uint16_t len, uint8_t* packet);
 
-//! Packet receive function.
-/// Gets a packet from the network receive buffer, if one is available.
-/// The packet will by headed by an ethernet header.
-/// \param	maxlen	The maximum acceptable length of a retrieved packet.
-/// \param	packet	Pointer where packet data should be stored.
-/// \return Packet length in bytes if a packet was retrieved, zero otherwise.
+/* Packet receive function.
+   Gets a packet from the network receive buffer, if one is available.
+   The packet will by headed by an ethernet header.
+   \param	maxlen	The maximum acceptable length of a retrieved packet.
+   \param	packet	Pointer where packet data should be stored.
+   \return Packet length in bytes if a packet was retrieved, zero otherwise. */
 uint16_t enc28j60PacketReceive(uint16_t maxlen, uint8_t* packet);
 
-//! execute procedure for recovering from a receive overflow
-/// this should be done when the receive memory fills up with packets
+/* execute procedure for recovering from a receive overflow
+   this should be done when the receive memory fills up with packets */
 void enc28j60ReceiveOverflowRecover(void);
 
-//! formatted print of important ENC28J60 registers
+/* formatted print of important ENC28J60 registers */
 void enc28j60RegDump(void);
 
-//! get link status
-/// \return True if connected, False otherwise.
+/* get link status
+   \return True if connected, False otherwise. */
 bool enc28j60LinkStatus(void);
 
-/* The SPI transport is private to enc28j60.c and its shape depends on
- * ENC28J60_SPI_MODE0 -- bit-banged full duplex, or two half-duplex bursts
- * over UART Mode 0. Nothing outside the driver ever used this. */
+uint8_t spi_byte(uint8_t d);
 
 #endif
-//@}
+/* @} */
