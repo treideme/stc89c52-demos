@@ -1,18 +1,9 @@
-/* Lean ENC28J60 driver -- see enc.h for what differs from 09_ethernet. */
+/* Lean ENC28J60 driver
+ */
 #include <mcs51/8052.h>
 #include "enc.h"
 #include "netcfg.h"
 
-/* Pins exactly as 09_ethernet/enc28j60_cfg.h (the bench wiring). */
-/* SPI pins. Overridable from the build so one source serves both wirings.
- * On the HC6800-ES, P0 does NOT work: it is open-drain (highs only through
- * the board's 10k packs) into a bus shared with the always-enabled 74HC245,
- * the LED-matrix rows and the LCD data lines. Measured 2026-09-26: on P0 every
- * register read back doubled (EREVID 0x06 -> 0x0C); on P1/P3, which drive
- * their highs actively, all 16 write/read patterns came back exact across
- * three cold boots. P1.4/P1.6/P1.7 carry only open keypad contacts and P3.3
- * an open key plus an unpopulated header, so they are the free pins here.
- */
 #ifndef CS
 #define CS   P3_3
 #endif

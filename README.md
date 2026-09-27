@@ -285,19 +285,10 @@ more details, and **[09_ethernet/README.md](09_ethernet/README.md)** for the
 wiring, the memory budget per protocol rung, and what the driver does about a
 marginal link.
 
-One set of sources, built several ways. `09_ethernet.hex` is the bring-up
-build: it resets an ENC28J60 over bit-banged SPI, reports the revision on the
-serial console, and then answers the network while printing link health. The
-same firmware without the console is built one image per protocol rung, so the
-cost of each is visible -- ARP through DHCP, DNS and a one-connection TCP
-echo.
-
 Rungs 1-7 fit the fitted STC89C52RC in 7,902 of its 8,192 bytes. Rung 8 adds TCP
 and needs about 11 KB, so it is built only for the pin-compatible STC89C516RD+.
 
-**The SPI pins are not P0.** P0 is open-drain on an 8051 and shares a bus with
-the 74HC245, the LED matrix and the LCD, which corrupts every register read. Use
-`SCK` on P1.7, `SI` on P1.6, `SO` on P1.4 and `CS` on P3.3. The module wants a
+Use `SCK` on P1.7, `SI` on P1.6, `SO` on P1.4 and `CS` on P3.3. The module wants a
 3.3 V supply; its pins are 5 V tolerant.
 
 ```shell
@@ -314,4 +305,4 @@ ninja -v -C ./build flash_net_stc89c516rd_rung8     # ... + TCP, bigger part
 
 
 ----
-[(C) 2025](LICENSE) [Thomas Reidemeister](https://reidemeister.com)
+[(C) 2025-2026](LICENSE) [Thomas Reidemeister](https://reidemeister.com)

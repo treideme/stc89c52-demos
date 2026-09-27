@@ -25,14 +25,6 @@ xprintf.c/.h  third-party tiny printf (Eugene Chaban, GPL-2.0+), console only
 hosttest/     a host-side ping and UDP echo checker
 ```
 
-There used to be a second, fuller driver here (`enc28j60.c`, descended from
-AVRlib) with its own `main()`. `enc.c` grew out of it -- `spi_byte()` and the
-init sequence came across verbatim -- and then gained the things the bench
-demanded: `ETXST` programmed, `ERXRDPT` written odd, a streaming API so a
-300-byte DHCP message never has to fit in 256 bytes of XRAM, and the link
-defences. Keeping both meant two drivers to fix every time the bench found
-something, so there is now one.
-
 ## Building
 
 ```shell
@@ -175,7 +167,7 @@ and the sticky `RXERIF`/`BUFER` path has to be handled on any link.
 
 **Keep them on for jumper wires.** That is what the photo in the blog post
 shows and what every measurement here was taken with. Turn them off only for
-wiring you have reason to trust -- a soldered board or a proper PCB -- where
+wiring you have reason to trust, a soldered board or a proper PCB, where
 the fault they answer does not exist.
 
 ```shell
@@ -183,19 +175,9 @@ ninja -C ./build                                 # defended, the default
 sdcc ... -DENC_LINK_DEFENCES=0 ...               # bare, for trusted wiring
 ```
 
-**Measured effect with them on: a permanent wedge becomes graceful
-degradation.** The board no longer goes deaf. Under sustained traffic it
+The board no longer goes deaf. Under sustained traffic it
 answers one to five of five pings and one to four of five UDP echoes. That is
 an improvement and it is not a fix; the remaining fault is electrical.
-
-### They are what puts these numbers above the blog post's
-
-The defences cost **250 bytes of flash and 6 bytes of XRAM**, the same on every
-rung, and that cost is included in every figure in the table above. **The blog
-post's table was measured without them**, so the two do not line up and are not
-meant to. Build with `-DENC_LINK_DEFENCES=0` and the XRAM matches the post
-exactly; the flash is still 505 B higher, which is the non-optional work listed
-at the top of this section.
 
 ## Checking it from a host
 
@@ -211,9 +193,7 @@ uv run hosttest.py --no-ping            # UDP only
 
 It shells out to the system `ping` because a raw ICMP socket needs
 administrator rights on Windows, and it drains the UDP socket before each
-exchange. Without that drain, a reply that missed its timeout is handed to the
-*next* `recvfrom()` and every later exchange reports a mismatch -- which looks
-exactly like a firmware bug and is not one.
+exchange.
 
 **The first ping after a cold boot is usually lost** while ARP resolves. The
 board answers the ARP request and replies from the second ping onward.
