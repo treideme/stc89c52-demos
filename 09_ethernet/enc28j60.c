@@ -63,7 +63,8 @@ unsigned int nicPoll(unsigned int maxlen, uint8_t* packet)
 void nicGetMacAddress(uint8_t* macaddr)
 {
 	/* read MAC address registers
-	   NOTE: MAC address in ENC28J60 is byte-backward */
+	 * NOTE: MAC address in ENC28J60 is byte-backward
+	 */
 	*macaddr++ = enc28j60ReadReg(MAADR5);
 	*macaddr++ = enc28j60ReadReg(MAADR4);
 	*macaddr++ = enc28j60ReadReg(MAADR3);
@@ -75,7 +76,8 @@ void nicGetMacAddress(uint8_t* macaddr)
 void nicSetMacAddress(uint8_t* macaddr)
 {
 	/* write MAC address
-	   NOTE: MAC address in ENC28J60 is byte-backward */
+	 * NOTE: MAC address in ENC28J60 is byte-backward
+	 */
 	enc28j60WriteReg(MAADR5, *macaddr++);
 	enc28j60WriteReg(MAADR4, *macaddr++);
 	enc28j60WriteReg(MAADR3, *macaddr++);
@@ -161,9 +163,10 @@ void enc28j60WriteBuffer(uint16_t len, uint8_t* data)
 void enc28j60SetBank(uint8_t address)
 {
 	/* set the bank (if needed)
-	   if((address & BANK_MASK) != Enc28j60Bank)
-	   {
-	   set the bank */
+	 * if((address & BANK_MASK) != Enc28j60Bank)
+	 * {
+	 * set the bank
+	 */
 		enc28j60WriteOp(ENC28J60_BIT_FIELD_CLR, ECON1, (ECON1_BSEL1|ECON1_BSEL0));
 		enc28j60WriteOp(ENC28J60_BIT_FIELD_SET, ECON1, (address & BANK_MASK)>>5);
 		Enc28j60Bank = (address & BANK_MASK);
@@ -190,20 +193,21 @@ void enc28j60WriteReg(uint8_t address, uint8_t data)
 static uint8_t Enc28j60MacVerify;
 
 /* Errata DS80349C #1, B1 and B4 ONLY: below an 8 MHz SPI clock, reads and
-   writes of the MAC registers may be unreliable. No 8051 gets near 8 MHz --
-   bit-banging measures about 35 kHz here -- so on affected silicon this is
-   not an edge case, it is every access.
-
-   Neither published workaround is available on this board: 8 MHz is out of
-   reach, and clocking the host off the ENC28J60's CLKOUT means taking the
-   crystal off the dev kit.
-
-   A third falls out of what the erratum actually restricts. Access is
-   UNRELIABLE, not impossible, and it covers the MAC registers only -- not the
-   ETH registers and not the packet buffer, which is where the throughput is.
-   MAC registers are written about a dozen times, all during init. So write,
-   read back, and retry: an unreliable access becomes a bounded startup cost,
-   with nothing to pay on B5/B7. */
+ * writes of the MAC registers may be unreliable. No 8051 gets near 8 MHz --
+ * bit-banging measures about 35 kHz here -- so on affected silicon this is
+ * not an edge case, it is every access.
+ *
+ * Neither published workaround is available on this board: 8 MHz is out of
+ * reach, and clocking the host off the ENC28J60's CLKOUT means taking the
+ * crystal off the dev kit.
+ *
+ * A third falls out of what the erratum actually restricts. Access is
+ * UNRELIABLE, not impossible, and it covers the MAC registers only -- not the
+ * ETH registers and not the packet buffer, which is where the throughput is.
+ * MAC registers are written about a dozen times, all during init. So write,
+ * read back, and retry: an unreliable access becomes a bounded startup cost,
+ * with nothing to pay on B5/B7.
+ */
 static void enc28j60WriteMacReg(uint8_t address, uint8_t data)
 {
 	uint8_t attempt;
@@ -213,7 +217,8 @@ static void enc28j60WriteMacReg(uint8_t address, uint8_t data)
 		return;
 	}
 	/* The read-back is itself a MAC access and can be corrupted too, so a
-	   mismatch does not prove the write failed. Retrying covers both. */
+	 * mismatch does not prove the write failed. Retrying covers both.
+	 */
 	for (attempt = 0; attempt < 8; attempt++) {
 		enc28j60WriteReg(address, data);
 		if (enc28j60ReadReg(address) == data)
@@ -275,12 +280,14 @@ void enc28j60Init(void)
 	/* check CLKRDY bit to see if reset is complete */
 	delay_us(50000);
 	/* Rev. B4 errata: wait rather than poll CLKRDY.
-	   while(!(enc28j60ReadReg(ESTAT) & ESTAT_CLKRDY)); */
+	 * while(!(enc28j60ReadReg(ESTAT) & ESTAT_CLKRDY));
+	 */
 
 	/* do bank 0 stuff
-	   initialize receive buffer
-	   16-bit transfers, must write low byte first
-	   set receive buffer start address */
+	 * initialize receive buffer
+	 * 16-bit transfers, must write low byte first
+	 * set receive buffer start address
+	 */
 	NextPacketPtr = RXSTART_INIT;
 	/* Rx start */
     enc28j60WriteRegPair(ERXSTL, RXSTART_INIT);
@@ -290,23 +297,26 @@ void enc28j60Init(void)
     enc28j60WriteRegPair(ERXNDL, RXSTOP_INIT);
     /* TX start */
     /* ETXST must be set, or it stays 0x0000 - the RX buffer - and
-       enc28j60PacketSend() transmits whatever is in the receive area
-       instead of the frame it just wrote. It only sets EWRPT and ETXND. */
+     * enc28j60PacketSend() transmits whatever is in the receive area
+     * instead of the frame it just wrote. It only sets EWRPT and ETXND.
+     */
     enc28j60WriteReg(ETXSTL, TXSTART_INIT);
     enc28j60WriteReg(ETXSTH, TXSTART_INIT>>8);
     /* Packet filter: unicast to our MAC, plus broadcast ARP. The ARP
-       pattern matches Type + ETH.DST, giving mask 0x303F, so EPMM0 = 0x3F
-       and EPMM1 = 0x30, with checksum 0xF7F9. */
+     * pattern matches Type + ETH.DST, giving mask 0x303F, so EPMM0 = 0x3F
+     * and EPMM1 = 0x30, with checksum 0xF7F9.
+     */
     enc28j60WriteReg(ERXFCON, ERXFCON_UCEN|ERXFCON_CRCEN|ERXFCON_PMEN);
     enc28j60WriteRegPair(EPMM0, 0x303f);
     enc28j60WriteRegPair(EPMCSL, 0xf7f9);
 
     /* Decide the MAC write strategy before writing any MAC register. EREVID
-       is an ETH register, so reading it stays reliable even on the silicon
-       errata #1 affects -- which is what makes this test possible at all.
-       DS80349C Table 1: 0x02 = B1, 0x04 = B4, 0x05 = B5, 0x06 = B7, and the
-       affected-revisions box carries marks under B1 and B4 only. On anything
-       newer the verified path is pure cost, so it is not paid. */
+     * is an ETH register, so reading it stays reliable even on the silicon
+     * errata #1 affects -- which is what makes this test possible at all.
+     * DS80349C Table 1: 0x02 = B1, 0x04 = B4, 0x05 = B5, 0x06 = B7, and the
+     * affected-revisions box carries marks under B1 and B4 only. On anything
+     * newer the verified path is pure cost, so it is not paid.
+     */
     {
         uint8_t rev = enc28j60ReadReg(EREVID);
         Enc28j60MacVerify = (rev == 0x02) || (rev == 0x04);
@@ -315,14 +325,16 @@ void enc28j60Init(void)
     /* bank 2: enable MAC receive, bring the MAC out of reset */
     enc28j60WriteMacReg(MACON1, MACON1_MARXEN|MACON1_TXPAUS|MACON1_RXPAUS);
     /* MACON2 = 0 brings the MAC out of reset. The old code got that as a side
-       effect of the pair write at MACON1; spelled out because each half now
-       has to be verified on its own. */
+     * effect of the pair write at MACON1; spelled out because each half now
+     * has to be verified on its own.
+     */
     enc28j60WriteMacReg(MACON2, 0x00);
     /* Automatic padding to 60 bytes and CRC. Datasheet 3.2.3/3.2.4: BFS and
-       BFC are valid on ETH registers ONLY. MACON3 is a MAC register -- this
-       file's own header tags it with SPRD_MASK -- so the bit-field form was
-       undefined. MACON3 reads 0x00 after reset, so a plain write sets the
-       same bits. */
+     * BFC are valid on ETH registers ONLY. MACON3 is a MAC register -- this
+     * file's own header tags it with SPRD_MASK -- so the bit-field form was
+     * undefined. MACON3 reads 0x00 after reset, so a plain write sets the
+     * same bits.
+     */
     enc28j60WriteMacReg(MACON3, MACON3_PADCFG0|MACON3_TXCRCEN|MACON3_FRMLNEN);
     /* inter-frame gap, non-back-to-back */
     enc28j60WriteMacReg(MAIPGL, 0x12);
@@ -376,13 +388,15 @@ uint16_t enc28j60PacketReceive(uint16_t maxlen, uint8_t* packet)
 	uint16_t len;
 
 	/* check if a packet has been received and buffered
-	   if( !(enc28j60ReadReg(EIR) & EIR_PKTIF) ) */
+	 * if( !(enc28j60ReadReg(EIR) & EIR_PKTIF) )
+	 */
 	if( !enc28j60ReadReg(EPKTCNT) )
 		return 0;
 	
 	/* Make absolutely certain that any previous packet was discarded
-	   if( WasDiscarded == FALSE)
-	   MACDiscardRx(); */
+	 * if( WasDiscarded == FALSE)
+	 * MACDiscardRx();
+	 */
 
 	/* Set the read pointer to the start of the received packet */
 	enc28j60WriteReg(ERDPTL, (NextPacketPtr));
@@ -398,14 +412,16 @@ uint16_t enc28j60PacketReceive(uint16_t maxlen, uint8_t* packet)
 	rxstat |= enc28j60ReadOp(ENC28J60_READ_BUF_MEM, 0)<<8;
 
 	/* limit retrieve length
-	   (we reduce the MAC-reported length by 4 to remove the CRC) */
+	 * (we reduce the MAC-reported length by 4 to remove the CRC)
+	 */
 	len = MIN(len, maxlen);
 
 	/* copy the packet from the receive buffer */
 	enc28j60ReadBuffer(len, packet);
 
 	/* Move the RX read pointer to the start of the next received packet
-	   This frees the memory we just read out */
+	 * This frees the memory we just read out
+	 */
 	enc28j60WriteReg(ERXRDPTL, (NextPacketPtr));
 	enc28j60WriteReg(ERXRDPTH, (NextPacketPtr)>>8);
 
@@ -429,9 +445,10 @@ void enc28j60RegDump(void)
     
     PUTS("MAC  : MACON1  MACON2  MACON3  MACON4  MAC-Address\r\n");
 	/* PRINTF("        0x%02X", enc28j60ReadReg(MACON1));
-	   PRINTF("    0x%02X", enc28j60ReadReg(MACON2));
-	   PRINTF("    0x%02X", enc28j60ReadReg(MACON3));
-	   PRINTF("    0x%02X", enc28j60ReadReg(MACON4)); */
+	 * PRINTF("    0x%02X", enc28j60ReadReg(MACON2));
+	 * PRINTF("    0x%02X", enc28j60ReadReg(MACON3));
+	 * PRINTF("    0x%02X", enc28j60ReadReg(MACON4));
+	 */
 	PRINTF("   %02X", enc28j60ReadReg(MAADR5));
 	PRINTF("%02X", enc28j60ReadReg(MAADR4));
 	PRINTF("%02X", enc28j60ReadReg(MAADR3));

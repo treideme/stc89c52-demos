@@ -98,47 +98,91 @@ at 11,027 B of flash and 507 B of XRAM. Every rung up to 7 fits the small part
 with room left, which is why `meson.build` stops the RC at 7: asking for rung 8
 there would fail the link and break the build.
 
-### These numbers are about 755 bytes above the ones in the blog post
+### These numbers are 755 bytes above the ones in the blog post
 
-The post's table was measured before the link defences below existed. Every
-rung here is **exactly 755 B of flash and 6 B of XRAM larger**, because that
-code lives in `enc.c` and links into all of them. The shape is unchanged and so
-are both conclusions that hang off it: rungs 1-7 fit the RC, rung 8 does not,
-and rung 5 is free.
+The post's table was measured before the link defences existed. Every rung here
+is **exactly 755 B of flash and 6 B of XRAM larger** -- the same constant on all
+eight, because that code lives in `enc.c` and links into all of them. The shape
+is unchanged and so are both conclusions that hang off it: rungs 1-7 fit the RC,
+rung 8 does not, and rung 5 is free.
 
-## The link is marginal, and the driver assumes it
+250 B of that is the defences and can be switched off; the rest cannot. See
+[the link defences](#the-link-defences-and-when-you-need-them) below.
+
+## The link defences, and when you need them
 
 The board answered ping and UDP for minutes, then stopped replying and stayed
 deaf until a reset. Twelve and then fourteen consecutive runs came back 0 of 5.
 
-Three causes were found and fixed. `ECON1.RXEN` was set once at init and the
-`TXRST` pulse clears it. `tx_idle()` waited on `TXRTS` forever, and a
-half-duplex transmit error leaves that bit set. And the next-packet-pointer
-chain was followed without validation, so one garbage header wedged the receive
-ring permanently: the hardware computes its free space from `ERXRDPT`, so a
-pointer outside the ring means the buffer is forever full.
+Three causes were found, and those fixes are **not** optional or behind a flag,
+because none of them is about wiring quality:
+
+- `ECON1.RXEN` was set once at init, and the `TXRST` pulse clears it. Every
+  transmit therefore switched the receiver off.
+- `tx_idle()` waited on `TXRTS` forever, and a half-duplex transmit error
+  leaves that bit set. It is bounded now.
+- `ETXST` was never set per frame, so a transmit could send the receive area.
 
 Fixing those revealed the real problem. **The SPI link itself is electrically
-marginal.** A read-only `EREVID` canary, which must return `0x06`, misreads one
-to three times per run once traffic flows. Corrupted headers come back carrying
-frame payload (`0x4141`, two ASCII `A`s), or pointers that are odd, or pointers
-outside the ring. Widening the clock made it worse.
+marginal**, and that is a property of the jumper wires, not of the code. A
+read-only `EREVID` canary, which must return `0x06`, misreads one to three
+times per run once traffic flows. Corrupted headers come back carrying frame
+payload (`0x4141`, two ASCII `A`s), or pointers that are odd, or pointers
+outside the ring. Widening the clock made it worse rather than better, which is
+what says this is lost synchronisation rather than edge speed.
 
-So `enc.c` does not trust what it reads:
+So `enc.c` can be built not to trust what it reads. Four defences, all behind
+`ENC_LINK_DEFENCES` in `netcfg.h`, which defaults to on:
 
-- `spi_resync()` pulses `CS` to get a slave stuck mid-opcode back in step.
-- `rd_stable()` reads twice and believes a repeat.
-- every packet header is read twice and validated before it is acted on, with
-  ring recovery when the pointer cannot be real.
-- an `RXEN` watchdog, because on this link even control writes get corrupted,
-  and one lost `ECON1` write leaves the board deaf while every status register
-  still reads healthy.
+**`spi_resync()`** raises `CS`, pulses it low with no clocks, and releases it.
+A slave that missed or gained a single clock edge is stuck mid-opcode and stays
+out of step for every byte after it; ending the transaction is the only
+recovery available from the master side. Costs four SPI byte times, so it is
+used liberally.
 
-**Measured effect: a permanent wedge becomes graceful degradation.** The board
-no longer goes deaf. Under sustained traffic it answers one to five of five
-pings and one to four of five UDP echoes. That is an improvement and it is not
-a fix -- the remaining fault is electrical, and a soldered board would not need
-any of this.
+**`rd_stable()`** reads a register twice and believes only a value that
+repeats. On disagreement it resyncs and tries once more. Registers are read far
+less often than frame bytes, so the second read is affordable where doubling
+the payload reads would not be.
+
+**The header is read twice** and the two copies must agree. The packet header
+is the one read whose corruption is unrecoverable, because it carries the
+pointer to the next packet, and re-reading is free: `ERDPT` just gets rewound.
+
+**An `RXEN` watchdog** re-asserts receive every 256 polls. On this link even
+control writes get corrupted, and a lost `ECON1` write leaves the board deaf
+while every status register still reads perfectly healthy -- no errors,
+`CLKRDY` set, and nothing arriving.
+
+Header validation and ring recovery sit outside the flag on purpose. A frame
+that overruns the receive buffer is ordinary traffic rather than bad wiring,
+and the sticky `RXERIF`/`BUFER` path has to be handled on any link.
+
+### Which setting to build
+
+**Keep them on for jumper wires.** That is what the photo in the blog post
+shows and what every measurement here was taken with. Turn them off only for
+wiring you have reason to trust -- a soldered board or a proper PCB -- where
+the fault they answer does not exist.
+
+```shell
+ninja -C ./build                                 # defended, the default
+sdcc ... -DENC_LINK_DEFENCES=0 ...               # bare, for trusted wiring
+```
+
+**Measured effect with them on: a permanent wedge becomes graceful
+degradation.** The board no longer goes deaf. Under sustained traffic it
+answers one to five of five pings and one to four of five UDP echoes. That is
+an improvement and it is not a fix; the remaining fault is electrical.
+
+### They are what puts these numbers above the blog post's
+
+The defences cost **250 bytes of flash and 6 bytes of XRAM**, the same on every
+rung, and that cost is included in every figure in the table above. **The blog
+post's table was measured without them**, so the two do not line up and are not
+meant to. Build with `-DENC_LINK_DEFENCES=0` and the XRAM matches the post
+exactly; the flash is still 505 B higher, which is the non-optional work listed
+at the top of this section.
 
 ## Checking it from a host
 

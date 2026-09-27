@@ -18,13 +18,14 @@
 #define ENC28J60_CFG_H
 
 /* SPI pins, overridable from the build so the old P0 wiring can still be
-   selected with -D for comparison.
-
-   P0 does not work on the HC6800-ES. It is open-drain into a bus shared with
-   the always-enabled 74HC245, the LED-matrix rows and the LCD data lines, and
-   every register read came back doubled (EREVID 0x06 -> 0x0C). P1.4/P1.6/P1.7
-   carry only open keypad contacts and P3.3 an open key plus an unpopulated
-   header; those read exact across three cold boots. */
+ * selected with -D for comparison.
+ *
+ * P0 does not work on the HC6800-ES. It is open-drain into a bus shared with
+ * the always-enabled 74HC245, the LED-matrix rows and the LCD data lines, and
+ * every register read came back doubled (EREVID 0x06 -> 0x0C). P1.4/P1.6/P1.7
+ * carry only open keypad contacts and P3.3 an open key plus an unpopulated
+ * header; those read exact across three cold boots.
+ */
 #ifndef ENC28J60_CONTROL_CS
 #define ENC28J60_CONTROL_CS P3_3
 #endif
@@ -39,7 +40,8 @@
 #endif
 
 /* 0x02 = locally administered unicast. The original 0x01 has the
-   multicast bit set, which is invalid as a source address. */
+ * multicast bit set, which is invalid as a source address.
+ */
 #define ENC28J60_MAC0 0x02
 #define ENC28J60_MAC1 0x02
 #define ENC28J60_MAC2 0x03

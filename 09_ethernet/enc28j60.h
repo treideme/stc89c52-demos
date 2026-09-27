@@ -25,11 +25,12 @@
 #define nop()	NOP()
 
 /* ENC28J60 Control Registers
-   Control register definitions are a combination of address,
-   bank number, and Ethernet/MAC/PHY indicator bits.
-   - Register address        (bits 0-4)
-   - Bank number        (bits 5-6)
-   - MAC/PHY indicator        (bit 7) */
+ * Control register definitions are a combination of address,
+ * bank number, and Ethernet/MAC/PHY indicator bits.
+ * - Register address        (bits 0-4)
+ * - Bank number        (bits 5-6)
+ * - MAC/PHY indicator        (bit 7)
+ */
 #define ADDR_MASK        0x1F
 #define BANK_MASK        0x60
 #define SPRD_MASK        0x80
@@ -245,9 +246,10 @@
 
 
 /* The RXSTART_INIT should be zero. See Rev. B4 Silicon Errata
-   buffer boundaries applied to internal 8K ram
-   the entire available packet buffer space is allocated
-   start with recbuf at 0/ */
+ * buffer boundaries applied to internal 8K ram
+ * the entire available packet buffer space is allocated
+ * start with recbuf at 0/
+ */
 #define RXSTART_INIT     0x0
 /* receive buffer end. make sure this is an odd value ( See Rev. B1,B4,B5,B7 Silicon Errata 'Memory (Ethernet Buffer)') */
 #define RXSTOP_INIT      (0x1FFF-0x1800)
@@ -289,28 +291,32 @@ void enc28j60PhyWrite(uint8_t address, uint16_t data);
 void enc28j60Init(void);
 
 /* Packet transmit function.
-   Sends a packet on the network.  It is assumed that the packet is headed by a valid ethernet header.
-   \param len		Length of packet in bytes.
-   \param packet	Pointer to packet data. */
+ * Sends a packet on the network.  It is assumed that the packet is headed by a valid ethernet header.
+ * \param len		Length of packet in bytes.
+ * \param packet	Pointer to packet data.
+ */
 void enc28j60PacketSend(uint16_t len, uint8_t* packet);
 
 /* Packet receive function.
-   Gets a packet from the network receive buffer, if one is available.
-   The packet will by headed by an ethernet header.
-   \param	maxlen	The maximum acceptable length of a retrieved packet.
-   \param	packet	Pointer where packet data should be stored.
-   \return Packet length in bytes if a packet was retrieved, zero otherwise. */
+ * Gets a packet from the network receive buffer, if one is available.
+ * The packet will by headed by an ethernet header.
+ * \param	maxlen	The maximum acceptable length of a retrieved packet.
+ * \param	packet	Pointer where packet data should be stored.
+ * \return Packet length in bytes if a packet was retrieved, zero otherwise.
+ */
 uint16_t enc28j60PacketReceive(uint16_t maxlen, uint8_t* packet);
 
 /* execute procedure for recovering from a receive overflow
-   this should be done when the receive memory fills up with packets */
+ * this should be done when the receive memory fills up with packets
+ */
 void enc28j60ReceiveOverflowRecover(void);
 
 /* formatted print of important ENC28J60 registers */
 void enc28j60RegDump(void);
 
 /* get link status
-   \return True if connected, False otherwise. */
+ * \return True if connected, False otherwise.
+ */
 bool enc28j60LinkStatus(void);
 
 uint8_t spi_byte(uint8_t d);

@@ -86,8 +86,9 @@ static uint16_t csum_add(uint16_t s, uint16_t w)
 }
 
 /* One's-complement sum of n bytes; an odd last byte is padded with zero.
-   Consecutive calls combine correctly only if every call but the last has
-   an even n -- hence NET_CHUNK is even. */
+ * Consecutive calls combine correctly only if every call but the last has
+ * an even n -- hence NET_CHUNK is even.
+ */
 static uint16_t sum16(const uint8_t __xdata *p, uint8_t n, uint16_t s)
 {
   for (; n > 1; n -= 2, p += 2)
@@ -142,7 +143,8 @@ static uint32_t be32(const uint8_t __xdata *p)
 }
 
 /* Timer 0, 50 ms at 12 MHz / 12T: the clock for DHCP lease timers (rung 6),
-   ARP/DNS retries (rung 7) and the TCP retransmit timer (rung 8). */
+ * ARP/DNS retries (rung 7) and the TCP retransmit timer (rung 8).
+ */
 volatile __data uint8_t net_ticks;
 static __data uint8_t sub50;
 
@@ -487,7 +489,8 @@ static void dhcp_send(uint8_t type)
   enc_tx_begin();
   enc_tx_write(pkt, PAYLOAD);
   /* BOOTP: op htype hlen hops, xid, secs, flags (broadcast reply unless we
-     already have an address to be answered at) */
+   * already have an address to be answered at)
+   */
   chunk[0] = 1; chunk[1] = 1; chunk[2] = 6; chunk[3] = 0;
   for (i = 0; i < 4; i++)
     chunk[4 + i] = xid[i];
@@ -693,17 +696,19 @@ static __xdata uint16_t peer_port;
 static __xdata uint8_t r_ip[4], r_mac[6];    /* where the segment being sent goes */
 static __xdata uint16_t r_port;
 static __xdata uint16_t r_lport;             /* ...and our port it comes from: an RST
-                                                must come from the port the refused
-                                                segment was sent to, not always 7 */
+              * must come from the port the refused
+              * segment was sent to, not always 7
+              */
 static __xdata uint32_t rcv_nxt, snd_una, snd_nxt, isn_clock;
 static __xdata uint16_t slot_len;            /* frame length in the retransmit slot */
 static __xdata uint8_t rto, tries, slot_lost;
 /* SDCC's small model keeps the locals and parameters of any non-leaf
-   function in the 128 B directly addressable data space, and the 32-bit
-   sequence arithmetic overflowed it ("Could not get 32 consecutive bytes in
-   internal RAM for area DSEG") -- on the RD+ too, whose extra 1 KB is XRAM,
-   not data space. So the 32-bit values live in XRAM and headers take their
-   seq/ack from o_seq/o_ack instead of parameters. */
+ * function in the 128 B directly addressable data space, and the 32-bit
+ * sequence arithmetic overflowed it ("Could not get 32 consecutive bytes in
+ * internal RAM for area DSEG") -- on the RD+ too, whose extra 1 KB is XRAM,
+ * not data space. So the 32-bit values live in XRAM and headers take their
+ * seq/ack from o_seq/o_ack instead of parameters.
+ */
 static __xdata uint32_t seg_seq, seg_ack, o_seq, o_ack;
 static __xdata uint16_t t_plen, t_n, t_psum;
 
@@ -837,7 +842,8 @@ static void handle_tcp(uint16_t tcp_len)
   match = tcp_state != TCP_LISTEN && eq(r_ip, peer_ip, 4) && r_port == peer_port;
 
   /* Echo only if, once this segment's ACK is applied, the slot is free:
-     then the payload can go straight into the slot while it is summed. */
+   * then the payload can go straight into the slot while it is summed.
+   */
   echo = t_plen && match && be16(th + 2) == NET_TCP_PORT &&
          (tcp_state == TCP_SYN_RCVD || tcp_state == TCP_ESTABLISHED) &&
          (flags & (TCP_ACK | TCP_SYN | TCP_RST)) == TCP_ACK &&
@@ -845,7 +851,8 @@ static void handle_tcp(uint16_t tcp_len)
   if (echo) {
     if (snd_una != snd_nxt)
       slot_lost = 1;                         /* overwriting unacked data; cleared
-                                                below if the checksum holds */
+                          * below if the checksum holds
+                          */
     enc_tx_begin_at(ENC_TCPSTART);
     enc_tx_fill(0, 54);                      /* header, patched in afterwards */
   }
@@ -928,7 +935,8 @@ static void handle_tcp(uint16_t tcp_len)
 
   if (!echo && t_plen)
     return;                                  /* data we did not stage (e.g. a stale
-                                                ACK): drop, the peer retransmits */
+                                   * ACK): drop, the peer retransmits
+                                   */
   rcv_nxt += t_plen;
   c = TCP_ACK;
   if (t_plen)
@@ -984,8 +992,9 @@ static void handle_ip(uint16_t frame_len)
 
   if (pkt[IP_PROTO] == 1 && pkt[L4] == 8 && pkt[L4 + 1] == 0) {
     /* ICMP echo -> echo reply. Only the type changes (8 -> 0), so the
-       checksum is updated incrementally (RFC 1624) instead of re-summing a
-       payload that never enters RAM. */
+     * checksum is updated incrementally (RFC 1624) instead of re-summing a
+     * payload that never enters RAM.
+     */
     reply_ip();
     pkt[L4] = 0;
     s = be16(pkt + L4 + 2);
@@ -998,8 +1007,9 @@ static void handle_ip(uint16_t frame_len)
 #if NET_RUNG >= 3
   else if (pkt[IP_PROTO] == 17 && be16(pkt + L4 + 2) == NET_UDP_ECHO_PORT) {
     /* UDP echo. Swapping addresses and ports leaves the pseudo-header sum
-       unchanged, so the request's UDP checksum is also correct for the reply
-       (and 0 = "no checksum" stays 0). */
+     * unchanged, so the request's UDP checksum is also correct for the reply
+     * (and 0 = "no checksum" stays 0).
+     */
     reply_ip();
     s = be16(pkt + L4);
     put16(pkt + L4, be16(pkt + L4 + 2));
