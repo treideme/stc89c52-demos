@@ -19,6 +19,7 @@
 
 #include <mcs51/8051.h>
 #include <mcs51/compiler.h> // NOP
+#include <stdbool.h> // bool (source used --std-c23 in stc89c52-demos; not enabled here)
 #include <stdint.h>
 
 #define nop()	NOP()
@@ -312,9 +313,11 @@ void enc28j60RegDump(void);
 
 //! get link status
 /// \return True if connected, False otherwise.
-bool enc28j60LinkStatus();
+bool enc28j60LinkStatus(void);
 
-uint8_t spi_byte(uint8_t d);
+/* The SPI transport is private to enc28j60.c and its shape depends on
+ * ENC28J60_SPI_MODE0 -- bit-banged full duplex, or two half-duplex bursts
+ * over UART Mode 0. Nothing outside the driver ever used this. */
 
 #endif
 //@}

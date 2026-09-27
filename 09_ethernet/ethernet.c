@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * @file i2c.c Example for bitbang I2C communication with AT24C02 EEPROM.
+ * @file ethernet.c ENC28J60 bring-up over bit-banged SPI: init, then poll registers.
  * @author Thomas Reidemeister
  */
 #include <mcs51/8052.h>
