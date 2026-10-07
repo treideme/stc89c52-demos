@@ -47,7 +47,7 @@ progs = [
     ['04_st7920_lcd', '04_st7920_lcd.hex', ['04_st7920_lcd/lcd.c'], '128x64 Display Example'],
     ['04_st7920_graph', '04_st7920_graph.hex', ['04_st7920_graph/lcd.c'], '128x64 Display Example Drawing'],
 
-    ['05_enc_servo', '05_enc_servo.hex', ['05_enc_servo/enc.c'], 'Encoder to LED and Servo Example'],
+    ['05_enc', '05_enc.hex', ['05_enc/enc.c'], 'Encoder to LED Example'],
     ['05_enc_stepper', '05_enc_stepper.hex', ['05_enc_stepper/logic.c', '05_enc_stepper/main.c'], 'Encoder to 28BYJ-48 Stepper Example'],
 
     ['06_DS18B20_1wire', '06_DS18B20_1wire.hex', ['06_DS18B20_1wire/wire.c'], 'Dallas 1 Wire Temperature Sensor Example'],

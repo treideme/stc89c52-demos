@@ -231,6 +231,34 @@ ninja -v -C ./build flash_04_st7920_graph
 # issuing the flash command.
 ```
 
+## 05 Encoder and Servo Examples
+
+A rotary knob that turns a stepper motor by the same angle: 
+one turn of the knob is one turn of the shaft.
+
+## Wiring
+
+| Part                        | Connection                    |
+|-----------------------------|-------------------------------|
+| Encoder `+` / `GND`         | ISP1 5V / GND                 |
+| Encoder `CLK` / `DT` / `SW` | P1.7 / P1.6 / P1.5            |
+| Motor                       | header P3, marked `+ A B C D` |
+
+The motor's JST plug goes straight onto P3 with the red wire on `+`. 
+Its wires leave the plug as orange, yellow, pink and blue, which is 
+the order the coils have to fire in, and the ULN2003 drives `A` to `D` 
+from P1.0 to P1.3. P1.5 also drives the buzzer, so pressing the 
+knob clicks. 
+
+```shell
+# Flash using ...
+ninja -v -C ./build flash_05_enc # Just encoder counts on LED array
+ninja -v -C ./build flash_05_enc_servo # Encoder + Servo
+# Adjust the meson.build file to point to the COM port your serial flasher enumerates to. And power-cycle the target after
+# issuing the flash command.
+```
+
+
 ## 06 Dallas DS18B20 Temperature Sensor
 
 See my blog post about this [here](https://reidemeister.com/blog/2025.11.22) for more details.
