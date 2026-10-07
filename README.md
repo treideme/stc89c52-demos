@@ -236,6 +236,8 @@ ninja -v -C ./build flash_04_st7920_graph
 A rotary knob that turns a stepper motor by the same angle: 
 one turn of the knob is one turn of the shaft.
 
+See my blog post about this [here](https://reidemeister.com/blog/2025.11.20).
+
 ![Encoder and Servo](05_enc_stepper/8051_enc_stepper.jpg)
 
 ### Wiring
