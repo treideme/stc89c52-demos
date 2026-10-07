@@ -14,7 +14,7 @@ cc_args = ['-mmcs51', '--Werror', '--std-c23', '--out-fmt-ihx']
 cc_incs = []
 
 # Flashing arguments for STCGAL
-stcgal_args = ['-P', 'stc89a', '-p', '/dev/ttyUSB0', '-b', '9600']
+stcgal_args = ['-P', 'stc89a', '-p', '/dev/ttyUSB0', '-b', '9600'] # Force 12T mode
 
 # Since SDCC is not natively supported in meson, make it a generator...
 compiler = generator(cc,
@@ -23,6 +23,11 @@ compiler = generator(cc,
 )
 
 # Laundry list of example
+#
+# [flash_target_name, output_name, sources, description]
+#
+# The first field names this entry's flash_* run_target and so has to be unique
+# across the list.
 progs = [
     ['00_hello', '00_hello.hex', ['00_hello/hello.c'], 'Hello World Example'],
 
@@ -43,6 +48,13 @@ progs = [
     ['04_st7920_graph', '04_st7920_graph.hex', ['04_st7920_graph/lcd.c'], '128x64 Display Example Drawing'],
 
     ['05_enc_servo', '05_enc_servo.hex', ['05_enc_servo/enc.c'], 'Encoder to LED and Servo Example'],
+
+    ['06_DS18B20_1wire', '06_DS18B20_1wire.hex', ['06_DS18B20_1wire/wire.c'], 'Dallas 1 Wire Temperature Sensor Example'],
+
+    ['07_at24c02_i2c', '07_at24c02_i2c.hex', ['07_at24c02_i2c/i2c.c'], 'I2C EEPROM Example'],
+
+    ['08_irda', '08_irda.hex', ['08_irda/irda.c'], 'Infrared transmission Example'],
+
 ]
 
 # Build automation
@@ -61,3 +73,84 @@ foreach p : progs
     )
 
 endforeach
+
+# ---------------------------------------------------------------------------
+# The IP stack (net.c/enc.c in 09_ethernet), one image per rung per part.
+#
+# This does not go through the generator above, for two reasons. SDCC refuses
+# more than one source per invocation ("error 120"), so compiling and linking
+# are separate steps either way; and a generator bakes its arguments in once,
+# while every rung needs a different -DNET_RUNG. A generator per rung would
+# also collide, because they would all emit main.rel/net.rel/enc.rel into the
+# same place. Explicit custom_targets with unique object names avoid both.
+#
+# Flags are the staging project's, not cc_args, so the sizes reproduce the
+# ones quoted in the blog post rather than drifting with this project's
+# defaults.
+net_cc_args = ['-mmcs51', '--model-small', '--Werror', '--opt-code-size', '--out-fmt-ihx']
+
+# [part, flash, iram, xram, highest rung that fits]
+#
+# The last field is a measurement, not a preference. Rung 8 (TCP) needs about
+# 11 KB against the RC's 8 KB, so asking for it would fail the link and break
+# the whole build. The RD+ is the pin-compatible part with 61 KB that does fit
+# it. Raise the number when a rung gets smaller, not to make ninja try harder.
+net_targets = [
+    ['stc89c52rc', 8192, 256, 256, 7],
+    ['stc89c516rd', 62464, 256, 1024, 8],
+]
+
+# [image name, flash target, part, flash, iram, xram, rung, console?]
+#
+# The bring-up image is the same firmware with the serial console compiled in
+# and rung 3 (ARP, ICMP, UDP echo) -- what the bench was actually driven with.
+# It keeps the flash_09_ethernet name it has always had.
+net_images = [['09_ethernet', '09_ethernet', 'stc89c52rc', 8192, 256, 256, 3, true]]
+
+foreach t : net_targets
+    foreach r : [1, 2, 3, 4, 5, 6, 7, 8]
+        if r <= t[4]
+            net_images += [['net_@0@_rung@1@'.format(t[0], r),
+                            'net_@0@_rung@1@'.format(t[0], r),
+                            t[0], t[1], t[2], t[3], r, false]]
+        endif
+    endforeach
+endforeach
+
+foreach im : net_images
+    img_args = net_cc_args + ['-DNET_RUNG=@0@'.format(im[6]),
+                              '-DNET_XRAM_SIZE=@0@'.format(im[5])]
+    img_srcs = ['main', 'net', 'enc']
+    if im[7]
+        img_args += ['-DNET_CONSOLE=1']
+        img_srcs += 'xprintf'
+    endif
+
+    img_objs = []
+    foreach src : img_srcs
+        img_objs += custom_target('@0@_@1@.rel'.format(im[0], src),
+            input : '09_ethernet/@0@.c'.format(src),
+            output : '@0@_@1@.rel'.format(im[0], src),
+            command : [cc, img_args, '-c', '@INPUT@', '-o', '@OUTPUT@'],
+        )
+    endforeach
+
+    img_hex = '@0@.hex'.format(im[0])
+    img_exe = custom_target(img_hex,
+        input : img_objs,
+        output : img_hex,
+        install : true,
+        install_dir : 'firmware',
+        command : [cc, img_args,
+                   '--code-size', '@0@'.format(im[3]),
+                   '--iram-size', '@0@'.format(im[4]),
+                   '--xram-size', '@0@'.format(im[5]),
+                   '-o', '@OUTPUT@', '@INPUT@'],
+    )
+
+    run_target('flash_@0@'.format(im[1]),
+        command : [stcgal] + stcgal_args + ['@0@'.format(img_exe.full_path())],
+        depends : img_exe,
+    )
+endforeach
+
