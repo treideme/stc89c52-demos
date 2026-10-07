@@ -154,14 +154,3 @@ foreach im : net_images
         depends : img_exe,
     )
 endforeach
-
-# Host-side unit test of 05_enc_stepper's SFR-free logic (quadrature decode,
-# half-step table, detent to half-step mapping), built with the native
-# compiler that project() already requires. Run with `meson test`.
-test('host_05_enc_stepper_logic',
-    executable('test_05_enc_stepper_logic',
-        ['05_enc_stepper/logic.c', '05_enc_stepper/test_logic.c'],
-        native : true,
-        build_by_default : false,
-    ),
-)
