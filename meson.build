@@ -47,6 +47,9 @@ progs = [
     ['04_st7920_lcd', '04_st7920_lcd.hex', ['04_st7920_lcd/lcd.c'], '128x64 Display Example'],
     ['04_st7920_graph', '04_st7920_graph.hex', ['04_st7920_graph/lcd.c'], '128x64 Display Example Drawing'],
 
+    ['05_enc', '05_enc.hex', ['05_enc/enc.c'], 'Encoder to LED Example'],
+    ['05_enc_stepper', '05_enc_stepper.hex', ['05_enc_stepper/logic.c', '05_enc_stepper/main.c'], 'Encoder to 28BYJ-48 Stepper Example'],
+
     ['06_DS18B20_1wire', '06_DS18B20_1wire.hex', ['06_DS18B20_1wire/wire.c'], 'Dallas 1 Wire Temperature Sensor Example'],
 
     ['07_at24c02_i2c', '07_at24c02_i2c.hex', ['07_at24c02_i2c/i2c.c'], 'I2C EEPROM Example'],
@@ -151,3 +154,14 @@ foreach im : net_images
         depends : img_exe,
     )
 endforeach
+
+# Host-side unit test of 05_enc_stepper's SFR-free logic (quadrature decode,
+# half-step table, detent to half-step mapping), built with the native
+# compiler that project() already requires. Run with `meson test`.
+test('host_05_enc_stepper_logic',
+    executable('test_05_enc_stepper_logic',
+        ['05_enc_stepper/logic.c', '05_enc_stepper/test_logic.c'],
+        native : true,
+        build_by_default : false,
+    ),
+)
