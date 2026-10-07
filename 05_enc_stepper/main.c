@@ -12,28 +12,6 @@
  * limitations under the License.
  *
  * @file main.c Rotary knob drives a 28BYJ-48 stepper 1:1 on the HC6800-ES.
- *
- * Wiring (see doc/HC6800-ES Schematic.pdf for the board):
- *   KY-040 encoder on ISP1: + -> 5V, GND -> GND, CLK -> P1.7, DT -> P1.6,
- *                           SW -> P1.5 (shared with the buzzer: it clicks).
- *   28BYJ-48 on header P3 ("+ A B C D"): ULN2003 IN1..IN4 are P1.0..P1.3,
- *                           OUT1..OUT4 are A..D, and pin 1 is VCC. The JST
- *                           plug goes straight on, red on "+": its wire order
- *                           (orange, yellow, pink, blue) is the firing order.
- *   P1.0..P1.7 are also the keypad, so leave the keypad alone while running.
- *
- * One detent turns the shaft by one detent of the knob: 4096 half-steps per
- * output revolution, 30 detents per knob revolution (the module used here), so
- * 136.53 half-steps per detent. It is computed exactly from the detent
- * count, so nothing drifts.
- *
- * Everything time-critical runs in a 1 ms Timer0 tick at 12 MHz:
- *   - sample the encoder every tick (the sampling interval is the debounce),
- *   - take one half-step toward the target every STEP_TICKS ticks,
- *   - de-energise the coils after IDLE_TICKS at the target. Each 5 V coil is
- *     about 50 ohm, so a held half-step draws 100-200 mA and warms the motor
- *     for nothing, while the 64:1 gearbox holds position by itself.
- * The main loop only mirrors the detent count onto LEDs D1..D8.
  * @author Thomas Reidemeister
  */
 #include <mcs51/8051.h>
@@ -130,20 +108,20 @@ void timer0_isr(void) __interrupt(TF0_VECTOR) {
 void main(void) {
   int16_t shown;
 
-  LED = 0xFF;                   // LEDs off (active low)
-  P1 = P1_INPUTS;               // coils off, inputs pulled up
+  LED = 0xFF;                         // LEDs off (active low)
+  P1 = P1_INPUTS;                     // coils off, inputs pulled up
   quad.ab = AB(CLK, DT);
   quad.acc = 0;
   quad.half = ENC_HALF_CYCLE;
 
-  TMOD = (TMOD & 0xF0u) | 0x01u;  // Timer0 mode 1, 16-bit
+  TMOD = (TMOD & 0xF0u) | 0x01u;      // Timer0 mode 1, 16-bit
   timer0_reload();
   ET0 = 1;
   EA = 1;
   TR0 = 1;
 
   for (;;) {
-    EA = 0;                     // 16-bit read of an ISR-owned value
+    EA = 0;                           // 16-bit read of an ISR-owned value
     shown = detents;
     EA = 1;
     LED = (uint8_t)~(uint8_t)shown;   // binary count of detents, active low

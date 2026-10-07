@@ -12,8 +12,7 @@
  * limitations under the License.
  *
  * @file logic.h Pure logic for 05_enc_stepper: quadrature decode and the
- *       28BYJ-48 half-step table. No SFRs, so it builds for the host too and
- *       test_logic.c exercises it there before anything touches a board.
+ *       28BYJ-48 half-step table.
  * @author Thomas Reidemeister
  */
 #ifndef ENC_STEPPER_LOGIC_H
@@ -24,12 +23,13 @@
 // Encoder lines packed as AB: A = CLK in bit 1, B = DT in bit 0.
 #define AB(a, b) ((uint8_t)(((a) ? 2u : 0u) | ((b) ? 1u : 0u)))
 
-// Encoders come in two detent styles, and they look identical from outside:
-//  - full-cycle: rests only at AB = 11, four transitions per detent (the
-//    common KY-040);
-//  - half-cycle: rests at AB = 11 AND AB = 00, two transitions per detent.
-//    Decoding one of these as full-cycle counts every second click only,
-//    which is exactly what the first hardware run showed.
+/* Encoders come in two detent styles, and they look identical from outside:
+ *  - full-cycle: rests only at AB = 11, four transitions per detent (the
+ *    common KY-040);
+ *  - half-cycle: rests at AB = 11 AND AB = 00, two transitions per detent.
+ *    Decoding one of these as full-cycle counts every second click only,
+ *    which is exactly what the first hardware run showed.
+ */
 #define DETENT_REST 3u
 #define DETENT_REST_HALF 0u
 
