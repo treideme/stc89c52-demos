@@ -336,5 +336,65 @@ ninja -v -C ./build flash_net_stc89c516rd_rung8     # ... + TCP, bigger part
 ```
 
 
+## 10 Fan Control
+
+A 4-wire PWM fan held at a speed set in RPM over the UART. Send `S 3000` and it
+settles in about a second and then stays within 10 RPM. The fan is a Waveshare
+Fan-4020-PWM-5V.
+
+See my blog post about this [here](https://reidemeister.com/blog/2025.12.06).
+
+![Fan Control](10_fan_control/fan_closed_loop.png)
+
+### Wiring
+
+No header takes the fan's plug, so it is four jumpers.
+
+| Fan wire    | Board                         |
+|-------------|-------------------------------|
+| black, GND  | ISP1 pin 4                    |
+| red, 5V     | ISP1 pin 2                    |
+| yellow, PWM | ISP1 pin 9 (P1.6)             |
+| blue, tach  | P3.3 (INT1) on the CPU header |
+
+Waveshare warns that the tach and PWM colours change between batches. The `W`
+command runs the fan flat out and reports which pin the tach pulses arrive on.
+
+### Commands
+
+UART at 9600 baud, 8N1, one command per line, answered `ok` or `err`.
+
+| Command                     | Does                                                    |
+|-----------------------------|---------------------------------------------------------|
+| `S <rpm>`                   | hold this speed; `S 0` stops the fan                    |
+| `R`                         | read back speed, duty, setpoint, mode and PWM period    |
+| `D <permille>`              | fixed duty, no control loop                             |
+| `F <us>`                    | PWM period, default 2000 (500 Hz)                       |
+| `T <n>`                     | stream `<seq> <rpm> <duty>` every n x 20 ms; `T 0` stops |
+| `K <kp> <ki> <kd>`          | loop gains, Q16 duty counts per RPM                     |
+| `L <i> <rpm> <permille>`    | set feedforward entry i; `L` lists, `C` clears          |
+| `W`                         | wire check                                              |
+
+### Characterizing and tuning
+
+`host/` is a uv project (Python 3.14) that drives the same commands. It measured
+the curve and the step responses that the default gains and feedforward table
+come from, and it can redo that for another fan.
+
+```shell
+cd 10_fan_control/host
+uv run fan --out char sweep --period 2000   # speed against duty, up and down
+uv run fan --out char step --period 2000    # duty steps, fitted to a first-order model
+uv run fan --out char tune --period 2000    # PI gains and feedforward, loaded into the board
+uv run fan --out char track --period 2000   # setpoint steps, scored
+```
+
+```shell
+# Flash using ...
+ninja -v -C ./build flash_10_fan_control
+# Adjust the meson.build file to point to the COM port your serial flasher enumerates to. And power-cycle the target after
+# issuing the flash command.
+```
+
 ----
 [(C) 2025-2026](LICENSE) [Thomas Reidemeister](https://reidemeister.com)

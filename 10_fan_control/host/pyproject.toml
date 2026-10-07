@@ -1,0 +1,34 @@
+[project]
+name = "fan-host"
+version = "0.1.0"
+description = "Characterize, model and tune the 10_fan_control fan controller over its UART"
+readme = "README.md"
+authors = [
+    { name = "Thomas Reidemeister", email = "treideme@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "matplotlib>=3.10",
+    "numpy>=2.3",
+    "pyserial>=3.5",
+]
+
+[project.scripts]
+fan = "fan_host.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.12.23,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff>=0.14",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]

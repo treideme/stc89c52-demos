@@ -56,6 +56,8 @@ progs = [
 
     ['08_irda', '08_irda.hex', ['08_irda/irda.c'], 'Infrared transmission Example'],
 
+    ['10_fan_control', '10_fan_control.hex', ['10_fan_control/logic.c', '10_fan_control/main.c'], 'PWM Fan Speed in RPM over UART Example'],
+
 ]
 
 # Build automation
